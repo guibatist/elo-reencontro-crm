@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elo Reencontro | Consultoria em Recuperação e Reabilitação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/responsive.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Open Sans', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; }
+        .btn-hover:hover { transform: translateY(-2px); transition: all 0.3s; }
+        
+        /* Timeline customizada */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: #cbd5e1;
+            z-index: 0;
+        }
+        @media (max-width: 768px) {
+            .timeline-line::before { left: 20px; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="bg-[#3a5c78] text-white py-2 px-4 text-center text-sm font-semibold tracking-wide">
+        Agência de Encaminhamento Especializado: Encontramos a clínica ideal para a sua família.
+    </div>
+
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur shadow-sm border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0">
+                    <img src="/static/logo.png" alt="Elo Reencontro" class="h-14">
+                </div>
+                <div class="hidden md:flex space-x-8 font-semibold text-slate-600">
+                    <a href="#sobre" class="hover:text-[#5B8FB9] transition">Nossa Consultoria</a>
+                    <a href="#clinicas" class="hover:text-[#5B8FB9] transition">Clínicas</a>
+                    <a href="#jornada" class="hover:text-[#5B8FB9] transition">A Jornada</a>
+                    <a href="#duvidas" class="hover:text-[#5B8FB9] transition">Dúvidas</a>
+                </div>
+                <div>
+                    <a href="https://wa.me/5511999999999?text=Olá! Preciso de consultoria para encontrar uma clínica." 
+                       target="_blank" rel="noopener noreferrer"
+                       class="bg-[#5B8FB9] text-white px-6 py-3 rounded-full font-bold shadow-md hover:bg-[#3a5c78] transition btn-hover inline-block">
+                        Falar com Consultor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative py-20 bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
+            <div class="z-10">
+                <span class="inline-block px-4 py-1 rounded-full bg-blue-50 text-[#5B8FB9] font-bold text-sm mb-4 border border-blue-100">CONSULTORIA GRATUITA</span>
+                <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
+                    A ajuda que sua família precisa está <span class="text-[#5B8FB9]">a um clique.</span>
+                </h1>
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                    Nossa missão é ser o elo entre o seu momento de incerteza e a solução correta. Realizamos a triagem e indicamos a clínica de reabilitação parceira mais adequada para o perfil do paciente.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="https://wa.me/5511999999999?text=Gostaria de iniciar o registro de demanda para um paciente." 
+                       target="_blank" rel="noopener noreferrer"
+                       class="bg-[#5B8FB9] text-white text-center px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:bg-[#3a5c78] transition btn-hover">
+                        Agendar Avaliação Gratuita
+                    </a>
+                    <a href="#clinicas" 
+                       class="border-2 border-slate-300 text-slate-700 text-center px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 hover:border-[#5B8FB9] transition">
+                        Ver Clínicas Parceiras
+                    </a>
+                </div>
+            </div>
+            <div class="relative hidden md:block">
+                <div class="rounded-3xl overflow-hidden shadow-2xl border-8 border-white h-full max-h-[500px]">
+                    <img src="https://images.pexels.com/photos/7176326/pexels-photo-7176326.jpeg" alt="Consultoria Humana e Acolhedora" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="sobre" class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Por que usar nossa consultoria?</h2>
+            <div class="w-20 h-1.5 bg-[#5B8FB9] mx-auto rounded-full"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border-b-4 border-[#5B8FB9]">
+                <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-[#5B8FB9]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04kM12 21.48l1.307-1.307a11.955 11.955 0 01-2.614 0L12 21.48z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Triagem Especializada</h3>
+                <p class="text-slate-600">Entendemos o caso antes de indicar. Avaliamos a situação para direcionar à unidade terapêutica mais eficaz para sua família.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border-b-4 border-[#5B8FB9]">
+                <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-[#5B8FB9]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Custo-Benefício Real</h3>
+                <p class="text-slate-600">Por sermos parceiros oficiais das clínicas, conseguimos apresentar as melhores condições financeiras diretamente aos familiares.</p>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border-b-4 border-[#5B8FB9]">
+                <div class="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-[#5B8FB9]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Encaminhamento Ágil</h3>
+                <p class="text-slate-600">Auxiliamos na ponte entre você e a clínica escolhida para que o processo de internação e resgate aconteça o mais rápido possível.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="clinicas" class="py-20 bg-white pt-28 -mt-8"> <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Rede de Clínicas Parceiras</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto text-lg">Selecionamos unidades credenciadas que possuem alvará sanitário e infraestrutura completa para o tratamento.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-10">
+                <div class="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-[#5B8FB9] transition shadow-sm hover:shadow-lg">
+                    <div class="h-48 bg-slate-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Clínica">
+                        <span class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-[#5B8FB9]">ESTRUTURA COMPLETA</span>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-2">Unidade Esperança</h3>
+                        <p class="text-slate-600 mb-6 text-sm">Foco em desintoxicação humanizada. Ambiente rodeado pela natureza, ideal para repouso e recuperação.</p>
+                        <a href="https://exemplo-clinica1.com.br" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-full py-3 rounded-lg border-2 border-[#5B8FB9] text-[#5B8FB9] font-bold hover:bg-[#5B8FB9] hover:text-white transition">Visitar Site Oficial</a>
+                    </div>
+                </div>
+
+                <div class="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-[#5B8FB9] transition shadow-sm hover:shadow-lg">
+                    <div class="h-48 bg-slate-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Clínica">
+                        <span class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-[#5B8FB9]">MASCULINO / FEMININO</span>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-2">Refúgio da Vida</h3>
+                        <p class="text-slate-600 mb-6 text-sm">Tratamento especializado em dependência e apoio psicossocial com equipe multidisciplinar experiente.</p>
+                        <a href="https://exemplo-clinica2.com.br" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-full py-3 rounded-lg border-2 border-[#5B8FB9] text-[#5B8FB9] font-bold hover:bg-[#5B8FB9] hover:text-white transition">Visitar Site Oficial</a>
+                    </div>
+                </div>
+
+                <div class="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-[#5B8FB9] transition shadow-sm hover:shadow-lg">
+                    <div class="h-48 bg-slate-200 overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Clínica">
+                        <span class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-[#5B8FB9]">EQUIPE DE RESGATE</span>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-2">Instituto Reencontro</h3>
+                        <p class="text-slate-600 mb-6 text-sm">Clínica parceira com protocolos ágeis de internação e suporte de alto padrão para casos complexos.</p>
+                        <a href="https://exemplo-clinica3.com.br" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-full py-3 rounded-lg border-2 border-[#5B8FB9] text-[#5B8FB9] font-bold hover:bg-[#5B8FB9] hover:text-white transition">Visitar Site Oficial</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="jornada" class="py-24 bg-slate-900 text-white relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">O Caminho para o Novo Reencontro</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto text-lg">Entenda como o nosso trabalho conecta a sua necessidade à solução clínica ideal.</p>
+            </div>
+
+            <div class="relative timeline-line">
+                <div class="relative z-10 flex flex-col md:flex-row items-center mb-24">
+                    <div class="flex-1 text-center md:text-right md:pr-12 mb-6 md:mb-0">
+                        <h3 class="text-2xl font-bold text-red-400 mb-2">O Pedido de Ajuda</h3>
+                        <p class="text-slate-400">A família percebe que não consegue mais lidar com a dependência sozinha e decide buscar orientação especializada.</p>
+                    </div>
+                    <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-slate-900 flex items-center justify-center z-20">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div class="flex-1 md:pl-12 hidden md:block"></div>
+                </div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-center mb-24">
+                    <div class="flex-1 hidden md:block"></div>
+                    <div class="w-16 h-16 bg-[#5B8FB9] rounded-full border-4 border-slate-900 flex items-center justify-center z-20">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <div class="flex-1 text-center md:text-left md:pl-12 mt-6 md:mt-0">
+                        <h3 class="text-2xl font-bold text-blue-400 mb-2">O Encaminhamento</h3>
+                        <p class="text-slate-400">Nossos consultores analisam o caso e conectam a família diretamente à clínica parceira mais capacitada para realizar o tratamento.</p>
+                    </div>
+                </div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-center">
+                    <div class="flex-1 text-center md:text-right md:pr-12 mb-6 md:mb-0">
+                        <h3 class="text-2xl font-bold text-emerald-400 mb-2">A Recuperação na Clínica</h3>
+                        <p class="text-slate-400">O paciente inicia o processo terapêutico seguro na unidade escolhida, abrindo caminho para a sobriedade e o reencontro familiar.</p>
+                    </div>
+                    <div class="w-16 h-16 bg-emerald-500 rounded-full border-4 border-slate-900 flex items-center justify-center z-20">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div class="flex-1 md:pl-12 hidden md:block"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="duvidas" class="py-20 bg-white">
+        <div class="max-w-3xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Dúvidas Frequentes</h2>
+            <div class="space-y-6">
+                <details class="group border-b border-slate-200 pb-4 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-lg list-none">
+                        Quanto custa o serviço de encaminhamento da Elo Reencontro?
+                        <span class="text-[#5B8FB9] group-open:rotate-180 transition">+</span>
+                    </summary>
+                    <p class="mt-4 text-slate-600">Nossa consultoria e triagem são gratuitas para as famílias. Somos parceiros comerciais das clínicas, o que nos permite prestar esse serviço sem custo adicional para você.</p>
+                </details>
+                <details class="group border-b border-slate-200 pb-4 cursor-pointer">
+                    <summary class="flex justify-between items-center font-bold text-lg list-none">
+                        Vocês são uma clínica de reabilitação?
+                        <span class="text-[#5B8FB9] group-open:rotate-180 transition">+</span>
+                    </summary>
+                    <p class="mt-4 text-slate-600">Não. Nós somos uma agência especializada em conectar famílias às melhores clínicas de reabilitação. Fazemos a ponte para garantir que você escolha um local seguro e adequado.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-[#5B8FB9]">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-8 text-white">Não espere o pior acontecer para pedir orientação.</h2>
+            <p class="text-xl mb-10 text-blue-50 font-medium">Um único contato pode ser o primeiro passo para resgatar quem você ama.</p>
+            <a href="https://wa.me/5511999999999?text=Gostaria de falar com um consultor agora." 
+               target="_blank" rel="noopener noreferrer"
+               class="bg-white text-[#3a5c78] px-10 py-5 rounded-2xl font-black text-2xl shadow-xl hover:bg-slate-100 hover:scale-105 transition inline-block">
+                FALAR COM UM CONSULTOR AGORA
+            </a>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-slate-400 py-16 px-4">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 border-b border-slate-800 pb-12">
+            <div class="col-span-1 md:col-span-1">
+                <img src="/static/logo.png" alt="Elo Reencontro" class="h-16 mb-6 brightness-0 invert opacity-80">
+                <p class="text-sm leading-relaxed mb-6">A agência parceira da sua família na busca por tratamento ético e eficaz contra a dependência.</p>
+                <div class="flex space-x-4">
+                    <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition">Instagram</a>
+                    <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition">Facebook</a>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-6">Navegação</h4>
+                <ul class="space-y-3">
+                    <li><a href="#sobre" class="hover:text-white transition">Nossa Consultoria</a></li>
+                    <li><a href="#jornada" class="hover:text-white transition">Como Funciona</a></li>
+                    <li><a href="#clinicas" class="hover:text-white transition">Clínicas Parceiras</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-6">Atendimento Ágil</h4>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-center space-x-2">
+                        <span>WhatsApp:</span>
+                        <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" class="text-white font-bold hover:text-[#5B8FB9] transition">(11) 99999-9999</a>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <span>Email:</span>
+                        <a href="mailto:contato@eloreencontro.com.br" target="_blank" rel="noopener noreferrer" class="text-white hover:text-[#5B8FB9] transition">contato@eloreencontro.com.br</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-6">Legal e Parcerias</h4>
+                <ul class="space-y-3 text-xs uppercase tracking-widest">
+                    <li><a href="/agente-de-cura" class="hover:text-white transition font-bold text-[#5B8FB9]">Seja um Agente de Vida</a></li>
+                    <li><a href="/termos-de-uso" class="hover:text-white transition">Termos de Uso</a></li>
+                    <li><a href="/politica-de-privacidade" class="hover:text-white transition">Política de Privacidade</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
+            <p>© 2026 Elo Reencontro - Agência de Encaminhamento Terapêutico.</p>
+            <p class="mt-4 md:mt-0">Criado para conectar e salvar.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

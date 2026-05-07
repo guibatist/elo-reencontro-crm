@@ -1,0 +1,97 @@
+/* =========================================================
+   ELO REENCONTRO - ARQUIVO DE RESPONSIVIDADE (MOBILE E TABLET)
+   Este arquivo atua em conjunto com o Tailwind CSS para
+   ajustes finos e segurança visual.
+   ========================================================= */
+
+/* -----------------------------------------
+   CELULARES (Telas até 768px)
+----------------------------------------- */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Ajuste de Textos Principais para não estourar a tela */
+    h1 {
+        font-size: 2.25rem !important;
+        line-height: 1.2 !important;
+    }
+    h2 {
+        font-size: 1.75rem !important;
+    }
+
+    /* 2. Botões: Ocupam 100% da tela no celular para facilitar o clique com o dedão */
+    .btn-hover {
+        width: 100%;
+        display: block;
+        text-align: center;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 1rem !important;
+    }
+
+    /* 3. Barra de Navegação (Navbar) */
+    nav img {
+        height: 40px !important; /* Logo menor para caber junto com o botão */
+    }
+    nav a.bg-\[\#5B8FB9\] {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.85rem !important; /* Botão "Falar com Consultor" menor */
+    }
+
+    /* 4. A JORNADA (Timeline Customizada) - Correção estrutural vital */
+    .timeline-line::before {
+        left: 24px !important; /* Joga a linha vertical totalmente para a esquerda */
+    }
+    
+    .timeline-line > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        padding-left: 60px !important; /* Espaço para não encavalar no ícone */
+        position: relative;
+    }
+
+    /* Alinhamento dos ícones da timeline */
+    .timeline-line > div > div:nth-child(2) {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin-top: 0 !important;
+    }
+
+    /* Remove alinhamentos à direita que quebram o celular */
+    .timeline-line > div > div:nth-child(1),
+    .timeline-line > div > div:nth-child(3) {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+        text-align: left !important;
+    }
+
+    /* 5. Ajuste nas caixas brancas das páginas internas (Privacidade, Termos, etc) */
+    main > div {
+        padding: 1.5rem !important;
+    }
+}
+
+/* -----------------------------------------
+   TABLETS E IPADS (Telas de 769px a 1024px)
+----------------------------------------- */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    
+    /* 1. Ajuste das 3 Clínicas: Evita que os cartões fiquem muito finos e compridos */
+    .grid.md\:grid-cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* Força 2 colunas no tablet */
+    }
+    
+    /* Joga a terceira clínica para a linha de baixo, centralizada */
+    .grid.md\:grid-cols-3 > div:nth-child(3) {
+        grid-column: span 2;
+        width: 50%;
+        margin: 0 auto;
+    }
+
+    /* 2. Textos um pouco menores que no Desktop */
+    h1 {
+        font-size: 3rem !important;
+    }
+}
