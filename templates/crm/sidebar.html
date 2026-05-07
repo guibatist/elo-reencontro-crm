@@ -1,0 +1,63 @@
+<aside 
+    class="h-screen flex flex-col sidebar-transition relative z-40 bg-white border-r border-slate-200"
+    :class="isCollapsed ? 'w-20' : 'w-72'"
+>
+    <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+        <div x-show="!isCollapsed" x-transition.opacity class="flex items-center gap-3">
+            <span class="font-black text-2xl text-slate-800 tracking-tighter">Elo Reencontro</span>
+        </div>
+        
+        <button 
+            @click="isCollapsed = !isCollapsed; localStorage.setItem('sidebarCollapsed', isCollapsed)"
+            class="p-2 hover:bg-slate-50 rounded-lg transition text-slate-400 group mx-auto"
+        >
+            <i class="fa-solid fa-bars-staggered text-xl group-hover:text-elo-blue"></i>
+        </button>
+    </div>
+
+    <div class="flex-1 py-6 space-y-10 overflow-y-auto scroller-navy">
+        
+        <div class="space-y-4">
+            <p x-show="!isCollapsed" class="px-6 text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] whitespace-nowrap">Main Menu</p>
+            <nav class="px-3 space-y-1">
+                
+                <template x-for="item in [
+                    { name: 'Dashboard', icon: 'fa-chart-pie', url: '/workbench/dashboard' },
+                    { name: 'Acolhimentos', icon: 'fa-address-book', url: '/workbench/acolhimentos' },
+                    { name: 'Calendário', icon: 'fa-calendar-days', url: '/workbench/calendario' },
+                    { name: 'Tarefas', icon: 'fa-list-check', url: '/workbench/tarefas' },
+                    { name: 'Relatórios', icon: 'fa-file-contract', url: '/workbench/relatorios' }
+                ]">
+                    <a :href="item.url" 
+                       class="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 group relative"
+                       :class="window.location.pathname.includes(item.url) ? 'bg-elo-blue text-white shadow-lg shadow-elo-blue/20' : 'text-slate-500 hover:bg-slate-50 hover:text-elo-blue'">
+                        <i class="fa-solid text-lg min-w-[24px] text-center" :class="item.icon"></i>
+                        <span x-show="!isCollapsed" class="whitespace-nowrap" x-text="item.name"></span>
+                    </a>
+                </template>
+
+            </nav>
+        </div>
+
+        <div class="space-y-4">
+            <p x-show="!isCollapsed" class="px-6 text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] whitespace-nowrap">Utilities</p>
+            <nav class="px-3 space-y-1">
+                <a href="/workbench/perfil" class="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
+                    <i class="fa-solid fa-circle-user text-lg min-w-[24px] text-center"></i>
+                    <span x-show="!isCollapsed" class="whitespace-nowrap">Meu Perfil</span>
+                </a>
+                <a href="/workbench/configuracoes" class="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 transition-all">
+                    <i class="fa-solid fa-gear text-lg min-w-[24px] text-center"></i>
+                    <span x-show="!isCollapsed" class="whitespace-nowrap">Configurações</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="p-4 border-t border-slate-100">
+        <a href="/logout" class="flex items-center gap-4 px-4 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all">
+            <i class="fa-solid fa-right-from-bracket text-lg min-w-[24px] text-center"></i>
+            <span x-show="!isCollapsed">Sair</span>
+        </a>
+    </div>
+</aside>

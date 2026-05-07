@@ -1,0 +1,88 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Gestão de Tarefas | Elo Workbench{% endblock %}
+
+{% block content %}
+<header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-10 py-8 sticky top-0 z-10">
+    <h1 class="text-3xl font-black text-slate-950 tracking-tighter">Gestão de Tarefas</h1>
+    <p class="text-base text-slate-600 mt-1.5">Organize suas ações pendentes e relatórios de contato.</p>
+</header>
+
+<div class="p-10">
+    <div class="grid gap-8">
+        
+        <div class="space-y-4">
+            <div class="flex items-center gap-3 mb-2 px-2">
+                <span class="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></span>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Tarefas para Executar</h2>
+            </div>
+
+            <div class="grid gap-6">
+                {% for tarefa in pendentes %}
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+                    <div class="flex items-center gap-6">
+                        <div class="w-12 h-12 bg-elo-light rounded-2xl flex items-center justify-center text-elo-navy font-bold text-xl uppercase">
+                            {{ tarefa.acolhimento.paciente.nome_completo[0] }}
+                        </div>
+                        <div>
+                            <h3 class="font-black text-slate-900 text-lg leading-tight">{{ tarefa.descricao }}</h3>
+                            <p class="text-sm text-slate-500">Paciente: <span class="font-semibold text-slate-700">{{ tarefa.acolhimento.paciente.nome_completo }}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-10">
+                        <div class="text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Prioridade</p>
+                            <span class="text-xs font-bold {% if tarefa.prioridade == 'Alta' %} text-red-600 {% else %} text-orange-500 {% endif %}">
+                                ● {{ tarefa.prioridade }}
+                            </span>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Vencimento</p>
+                            <span class="text-xs font-bold text-slate-700">
+                                {{ tarefa.data_vencimento.strftime('%d/%m/%Y') }}
+                            </span>
+                        </div>
+                        <a href="/workbench/tarefa/{{ tarefa.id }}/concluir" 
+                           class="bg-elo-blue/10 text-elo-blue px-6 py-2.5 rounded-xl font-bold hover:bg-elo-blue hover:text-white transition inline-block">
+                            Executar e Relatar
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-16 bg-white border border-dashed border-slate-200 rounded-3xl text-slate-400 font-bold italic">
+                    Nenhuma tarefa pendente no momento.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if concluidas %}
+        <div class="space-y-4 mt-6">
+            <div class="flex items-center gap-3 mb-2 px-2 opacity-50">
+                <span class="w-3 h-3 bg-slate-400 rounded-full"></span>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Concluídas Recentemente</h2>
+            </div>
+            
+            <div class="grid gap-4">
+                {% for tarefa in concluidas %}
+                <div class="bg-white/50 p-5 rounded-3xl border border-slate-200 flex items-center justify-between opacity-60">
+                    <div class="flex items-center gap-6">
+                        <div class="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-500 text-base line-through">{{ tarefa.descricao }}</h3>
+                            <p class="text-[10px] text-slate-400 uppercase font-black">{{ tarefa.acolhimento.paciente.nome_completo }}</p>
+                        </div>
+                    </div>
+                    <div class="text-xs font-bold text-slate-400 italic">Relatório Enviado</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

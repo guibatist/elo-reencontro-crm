@@ -1,0 +1,96 @@
+{% extends 'crm/base.html' %}
+{% block content %}
+<div class="min-h-screen bg-slate-50 flex">
+    
+    <aside class="w-96 bg-white border-r border-slate-200 p-10 sticky top-0 h-screen hidden lg:block">
+        <div class="mb-8 pb-8 border-b border-slate-100">
+            <p class="text-[10px] font-black text-elo-blue uppercase tracking-widest mb-4">Contexto do Acolhimento</p>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-elo-navy text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg">
+                    {{ tarefa.acolhimento.paciente.nome_completo[0] }}
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-900 leading-tight">{{ tarefa.acolhimento.paciente.nome_completo }}</h3>
+                    <p class="text-xs text-slate-500">Status: <span class="font-bold text-elo-blue">{{ tarefa.acolhimento.status }}</span></p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Decisor (Contato)</label>
+                    <p class="text-sm font-bold text-slate-800">{{ tarefa.acolhimento.decisor.nome_completo }}</p>
+                    <p class="text-xs text-green-600 font-bold mt-1">{{ tarefa.acolhimento.decisor.whatsapp }}</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Última Anotação</label>
+                    <p class="text-xs text-slate-600 italic">"{{ tarefa.acolhimento.atividades[0].anotacao if tarefa.acolhimento.atividades else 'Nenhuma nota anterior.' }}"</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-[10px] text-slate-300 font-black uppercase tracking-widest text-center mt-auto">
+            Elo Reencontro CRM v2.0
+        </div>
+    </aside>
+
+    <main class="flex-1 p-10 lg:p-20 overflow-y-auto">
+        <div class="max-w-2xl mx-auto">
+            <header class="mb-12">
+                <div class="flex items-center gap-2 text-elo-blue mb-4">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                    <span class="text-xs font-black uppercase tracking-widest">Execução de Tarefa</span>
+                </div>
+                <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-4">{{ tarefa.descricao }}</h1>
+                <p class="text-lg text-slate-500 font-medium leading-relaxed">Responda as perguntas abaixo para concluir esta ação e alimentar o histórico da venda.</p>
+            </header>
+
+            <form action="/workbench/tarefa/{{ tarefa.id }}/concluir" method="POST" class="space-y-10">
+                
+                <div class="space-y-3">
+                    <label class="block text-sm font-black text-slate-800 uppercase tracking-wide">1. O que aconteceu nessa interação? (Relatório)</label>
+                    <textarea name="resumo" required rows="5" class="w-full bg-white border border-slate-200 p-5 rounded-[2rem] text-slate-700 outline-none focus:ring-4 focus:ring-elo-blue/10 focus:border-elo-blue transition shadow-sm resize-none" placeholder="Descreva os detalhes da conversa, objeções ou avanços..."></textarea>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block text-sm font-black text-slate-800 uppercase tracking-wide">2. Temperatura do Lead</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="temperatura" value="Esfriou" class="peer sr-only" required>
+                            <div class="bg-white border-2 border-slate-100 p-6 rounded-[2rem] text-center peer-checked:border-red-500 peer-checked:bg-red-50 group-hover:bg-slate-50 transition shadow-sm">
+                                <span class="block text-2xl mb-2">❄️</span>
+                                <span class="text-[10px] font-black uppercase text-slate-500 peer-checked:text-red-600">Esfriou</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="temperatura" value="Morno" class="peer sr-only">
+                            <div class="bg-white border-2 border-slate-100 p-6 rounded-[2rem] text-center peer-checked:border-orange-400 peer-checked:bg-orange-50 group-hover:bg-slate-50 transition shadow-sm">
+                                <span class="block text-2xl mb-2">🔥</span>
+                                <span class="text-[10px] font-black uppercase text-slate-500 peer-checked:text-orange-600">Morno</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="temperatura" value="Quente" class="peer sr-only">
+                            <div class="bg-white border-2 border-slate-100 p-6 rounded-[2rem] text-center peer-checked:border-green-500 peer-checked:bg-green-50 group-hover:bg-slate-50 transition shadow-sm">
+                                <span class="block text-2xl mb-2">💰</span>
+                                <span class="text-[10px] font-black uppercase text-slate-500 peer-checked:text-green-600">Quente</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block text-sm font-black text-slate-800 uppercase tracking-wide">3. Qual o próximo passo definido?</label>
+                    <input type="text" name="proximo_passo" required class="w-full bg-white border border-slate-200 p-5 rounded-2xl font-bold text-slate-800 outline-none focus:ring-4 focus:ring-elo-blue/10 focus:border-elo-blue transition shadow-sm" placeholder="Ex: Ligar na segunda-feira após as 14h">
+                </div>
+
+                <div class="flex items-center gap-6 pt-6">
+                    <button type="submit" class="px-12 py-5 bg-elo-navy text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-elo-blue transition shadow-2xl shadow-elo-navy/30">
+                        Finalizar Tarefa
+                    </button>
+                    <a href="javascript:history.back()" class="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition">Cancelar e Voltar</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

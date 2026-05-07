@@ -1,0 +1,64 @@
+<div x-show="openModal" 
+     class="fixed inset-0 z-50 overflow-y-auto" 
+     x-cloak>
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        
+        <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-sm" @click="openModal = false"></div>
+
+        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <form action="/api/capturar-lead" method="POST" class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-black text-elo-navy tracking-tighter">Novo Acolhimento</h3>
+                    <button type="button" @click="openModal = false" class="text-slate-400 hover:text-slate-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="col-span-2 border-b border-slate-100 pb-2">
+                        <span class="text-[10px] font-black text-elo-blue uppercase tracking-widest">Dados do Decisor (Família)</span>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
+                        <input type="text" name="nome_familiar" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-elo-blue outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">WhatsApp</label>
+                        <input type="text" name="whatsapp" required placeholder="(00) 00000-0000" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-elo-blue outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Parentesco</label>
+                        <select name="parentesco" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none">
+                            <option value="Pai/Mãe">Pai/Mãe</option>
+                            <option value="Cônjuge">Cônjuge</option>
+                            <option value="Filho(a)">Filho(a)</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-2 border-b border-slate-100 pb-2 mt-4">
+                        <span class="text-[10px] font-black text-elo-blue uppercase tracking-widest">Dados do Paciente</span>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Paciente</label>
+                        <input type="text" name="nome_paciente" required class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-elo-blue outline-none">
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Urgência</label>
+                        <select name="urgencia" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none">
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Crítica">Crítica (Resgate)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button type="submit" class="w-full bg-elo-navy text-white font-black py-4 rounded-2xl hover:bg-elo-blue transition shadow-lg">
+                        CRIAR ACOLHIMENTO AGORA
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

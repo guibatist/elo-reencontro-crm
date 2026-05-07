@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Elo Workbench{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'elo-navy': '#002B5B',
+                        'elo-blue': '#1A5C96',
+                        'elo-light': '#E8F1F5',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .sidebar-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Scrollbar discreta */
+        .scroller-navy::-webkit-scrollbar { width: 4px; }
+        .scroller-navy::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-white text-slate-900 antialiased font-sans" 
+      x-data="{ 
+        isCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+        openModal: false 
+      }">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        {% include 'crm/sidebar.html' %}
+
+        <main class="flex-1 overflow-y-auto bg-slate-50 sidebar-transition relative border-l border-slate-200">
+            {% block content %}{% endblock %}
+        </main>
+        
+    </div>
+
+    {% include 'crm/modal_acolhimento.html' %}
+
+</body>
+</html>

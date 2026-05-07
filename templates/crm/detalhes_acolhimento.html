@@ -1,0 +1,324 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}{{ ac.paciente.nome_completo }} | Elo CRM{% endblock %}
+
+{% block content %}
+<div x-data="{ editModal: false, contatoModal: false, showNotaForm: false }" class="min-h-screen bg-slate-50 pb-12">
+
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 px-10 py-6 sticky top-0 z-20 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-5">
+            <a href="/workbench/acolhimentos" class="w-10 h-10 bg-slate-100 text-slate-400 hover:text-elo-navy hover:bg-slate-200 rounded-full flex items-center justify-center transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <div>
+                <nav class="flex text-[10px] font-black text-elo-blue uppercase tracking-widest mb-1">
+                    <span>Oportunidade #{{ ac.id }}</span>
+                </nav>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ ac.paciente.nome_completo }}</h1>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button @click="editModal = true" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition shadow-sm">
+                Editar Oportunidade
+            </button>
+        </div>
+    </header>
+
+    <div class="px-10 py-6 max-w-[1600px] mx-auto w-full">
+        <div class="flex gap-3 w-full">
+            {% set estágios = ['Novo', 'Em Atendimento', 'Apresentação', 'Internado (Ganho)', 'Perdido'] %}
+            {% for est in estágios %}
+            <div class="flex-1 flex items-center justify-center py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-300
+                {% if ac.status == est %} bg-elo-blue text-white shadow-lg shadow-elo-blue/30
+                {% elif loop.index < estágios.index(ac.status) + 1 %} bg-elo-blue/10 text-elo-blue border border-elo-blue/20
+                {% else %} bg-white border border-slate-200 text-slate-400 {% endif %}">
+                {{ est }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="px-10 grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
+        
+        <div class="col-span-12 lg:col-span-8 space-y-8">
+            
+            <div class="bg-white border border-slate-100 rounded-3xl shadow-sm p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-elo-navy"></div>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Prontuário e Detalhes</h2>
+                
+                <div class="grid grid-cols-2 gap-y-6 gap-x-8">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Urgência do Caso</label>
+                        <p class="text-sm font-black {% if ac.urgencia == 'Alta' or ac.urgencia == 'Crítica' %} text-red-600 {% else %} text-orange-500 {% endif %}">{{ ac.urgencia }}</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Investimento Previsto</label>
+                        <p class="text-sm font-black text-green-600">{{ ac.investimento_estimado or 'A definir' }}</p>
+                    </div>
+                    <div class="border-b border-slate-100 pb-3">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Agente Responsável</label>
+                        <p class="text-sm font-bold text-slate-800">{{ current_user.nome }} {{ current_user.sobrenome }}</p>
+                    </div>
+                    <div class="border-b border-slate-100 pb-3">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo de Internação</label>
+                        <p class="text-sm font-bold text-slate-800">{{ ac.tipo_internacao or 'Não definido' }}</p>
+                    </div>
+                    <div class="border-b border-slate-100 pb-3">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Previsão de Internação</label>
+                        <p class="text-sm font-bold text-slate-800">
+                            {% if ac.previsao_internacao %}
+                                {{ ac.previsao_internacao.strftime('%d/%m/%Y') }}
+                            {% else %}
+                                Não definida
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="border-b border-slate-100 pb-3">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Previsão de Cura</label>
+                        <p class="text-sm font-bold text-slate-800">
+                            {% if ac.previsao_cura %}
+                                {{ ac.previsao_cura.strftime('%d/%m/%Y') }}
+                            {% else %}
+                                Não definida
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Substâncias em Uso</label>
+                        <div class="text-sm text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100 italic">
+                            {{ ac.substancias_uso or 'Nenhuma informação registrada.' }}
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Comorbidades e Histórico</label>
+                        <div class="text-sm text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100 italic">
+                            {{ ac.comorbidades or 'Nenhuma informação registrada.' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-3xl shadow-sm p-8">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Atividades e Notas</h2>
+                    <button @click="showNotaForm = !showNotaForm" class="text-[10px] font-black text-white bg-elo-navy hover:bg-elo-blue px-4 py-2 rounded-xl transition shadow-md">
+                        + Registrar Nota
+                    </button>
+                </div>
+                
+                <div x-show="showNotaForm" style="display: none;" class="mb-8 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                    <form action="/api/acolhimento/{{ ac.id }}/nota" method="POST">
+                        <textarea name="anotacao" rows="3" placeholder="Registre uma ligação, objeção ou detalhe do caso..." required class="w-full bg-white border border-slate-200 p-4 rounded-xl text-sm outline-none focus:border-elo-blue focus:ring-2 focus:ring-elo-blue/20 resize-none mb-3"></textarea>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" @click="showNotaForm = false" class="px-5 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition">Cancelar</button>
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-elo-blue rounded-xl hover:bg-elo-navy transition shadow-md">Salvar Nota</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="border-l-2 border-slate-100 ml-3 space-y-8 mt-4">
+                    {% for nota in ac.atividades %}
+                    <div class="relative pl-8">
+                        <div class="absolute left-[-9px] top-0 w-4 h-4 bg-elo-blue rounded-full border-4 border-white shadow-sm"></div>
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">{{ nota.data_criacao.strftime('%d/%m/%y às %H:%M') }}</p>
+                            <p class="text-[10px] font-black text-elo-blue uppercase bg-elo-blue/10 px-3 py-1 rounded-lg">{{ nota.usuario.nome }}</p>
+                        </div>
+                        <div class="text-sm text-slate-700 font-medium whitespace-pre-wrap bg-slate-50 p-4 rounded-2xl border border-slate-100">{{ nota.anotacao }}</div>
+                    </div>
+                    {% else %}
+                    <div class="relative pl-8">
+                        <div class="absolute left-[-9px] top-0 w-4 h-4 bg-slate-200 rounded-full border-4 border-white"></div>
+                        <p class="text-sm text-slate-400 italic">Nenhuma nota registrada. Registre a primeira interação com a família.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-4 space-y-8">
+            
+            <div class="bg-white border border-slate-100 rounded-3xl shadow-sm p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-elo-blue"></div>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Contato Decisor</h2>
+                
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-elo-light text-elo-navy rounded-2xl flex items-center justify-center font-black text-xl">
+                        {{ ac.decisor.nome_completo[0] }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-black text-slate-900">{{ ac.decisor.nome_completo }}</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">{{ ac.decisor.parentesco or 'Responsável' }}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4 border-t border-slate-100">
+                    <div>
+                        <span class="block text-[10px] font-black text-slate-400 uppercase mb-1">WhatsApp</span>
+                        <a href="https://wa.me/55{{ ac.decisor.whatsapp | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') }}" target="_blank" class="text-sm font-bold text-green-600 hover:text-green-700 transition flex items-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> {{ ac.decisor.whatsapp }}
+                        </a>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-black text-slate-400 uppercase mb-1">E-mail</span>
+                        <span class="text-sm font-semibold text-slate-700">{{ ac.decisor.email or 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <button @click="contatoModal = true" class="w-full mt-6 py-3 text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                    Ver Ficha Completa
+                </button>
+            </div>
+
+            <div x-data="{ showTarefaForm: false }" class="bg-white border border-slate-100 rounded-3xl shadow-sm p-8 mb-8">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Próximas Tarefas</h2>
+                    <button @click="showTarefaForm = !showTarefaForm" class="text-[10px] font-black text-white bg-elo-blue hover:bg-elo-navy px-4 py-2 rounded-xl transition shadow-sm">
+                        + Agendar Tarefa
+                    </button>
+                </div>
+
+                <div x-show="showTarefaForm" class="mb-6 p-5 bg-slate-50 rounded-2xl border border-slate-200" style="display: none;">
+                    <form action="/api/acolhimento/{{ ac.id }}/tarefa" method="POST" class="grid grid-cols-12 gap-4">
+                        <div class="col-span-12">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">O que precisa ser feito?</label>
+                            <input type="text" name="descricao" required placeholder="Ex: Ligar para a mãe para confirmar resgate" class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-elo-blue/20">
+                        </div>
+                        <div class="col-span-4">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Dia</label>
+                            <div class="relative">
+                                <input type="date" name="date" required 
+                                    class="custom-date-input w-full bg-white border border-slate-200 p-2.5 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-elo-blue/20 transition">
+                                
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-elo-blue bg-white pl-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-span-4">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Hora (Opcional)</label>
+                            <input type="time" name="hora" class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-elo-blue/20">
+                        </div>
+                        <div class="col-span-4">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1">Prioridade</label>
+                            <select name="prioridade" class="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-elo-blue/20">
+                                <option value="Baixa">Baixa</option>
+                                <option value="Média" selected>Média</option>
+                                <option value="Alta">Alta</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 flex justify-end gap-3 mt-2">
+                            <button type="button" @click="showTarefaForm = false" class="text-xs font-bold text-slate-500 hover:bg-slate-200 px-5 py-2 rounded-xl transition">Cancelar</button>
+                            <button type="submit" class="bg-elo-navy text-white text-xs font-bold px-6 py-2 rounded-xl hover:bg-elo-blue transition shadow-md">Salvar Tarefa</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="space-y-3">
+                    {% for tarefa in ac.tarefas %}
+                    <div class="flex items-center justify-between p-4 bg-white hover:bg-slate-50 rounded-2xl border border-slate-200 transition shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="pt-1">
+                                {% if tarefa.status == 'Concluída' %}
+                                    <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-300 flex items-center justify-center border border-slate-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                {% else %}
+                                    <a href="/workbench/tarefa/{{ tarefa.id }}/concluir" class="w-6 h-6 rounded-md border-2 border-slate-300 hover:border-elo-blue hover:bg-elo-blue/10 flex items-center justify-center text-transparent hover:text-elo-blue transition group cursor-pointer block">
+                                        <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800 {% if tarefa.status == 'Concluída' %}line-through text-slate-400{% endif %}">{{ tarefa.descricao }}</p>
+                                <div class="flex items-center gap-3 mt-1.5">
+                                    <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md uppercase flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        {{ tarefa.data_vencimento.strftime('%d/%m/%y') }}
+                                        {% if tarefa.hora_vencimento %} às {{ tarefa.hora_vencimento.strftime('%H:%M') }} {% endif %}
+                                    </span>
+                                    
+                                    <span class="text-[10px] font-black uppercase px-2 py-1 rounded-md 
+                                        {% if tarefa.prioridade == 'Alta' %} bg-red-100 text-red-600 
+                                        {% elif tarefa.prioridade == 'Média' %} bg-orange-100 text-orange-600 
+                                        {% else %} bg-slate-100 text-slate-500 {% endif %}">
+                                        {{ tarefa.prioridade }}
+                                    </span>
+
+                                    <span class="text-[10px] font-black uppercase text-slate-400">
+                                        {{ tarefa.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="text-slate-300 hover:text-red-500 transition px-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-6 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                        <p class="text-sm font-bold text-slate-400">Nenhuma tarefa agendada.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-3xl shadow-sm p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Anexos</h2>
+                    <span class="w-6 h-6 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-[10px] font-black">0</span>
+                </div>
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 mb-2"></i>
+                    <p class="text-xs font-bold text-slate-500">Clique para enviar RG e Laudos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="contatoModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" x-cloak>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-sm" @click="contatoModal = false"></div>
+
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-2xl sm:my-8 sm:align-middle w-full max-w-md relative">
+                
+                <button type="button" @click="contatoModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition z-10 bg-white rounded-full p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <div class="bg-elo-navy px-8 py-10 text-center text-white relative">
+                    <div class="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center text-3xl font-black mx-auto mb-4 border border-white/20">
+                        {{ ac.decisor.nome_completo[0] }}
+                    </div>
+                    <h3 class="text-2xl font-black tracking-tight">{{ ac.decisor.nome_completo }}</h3>
+                    <p class="text-sm text-elo-light mt-1 font-medium uppercase tracking-widest">{{ ac.decisor.parentesco or 'Responsável Financeiro' }}</p>
+                </div>
+
+                <div class="p-8 space-y-6 bg-white">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">WhatsApp / Telefone</p>
+                        <a href="https://wa.me/55{{ ac.decisor.whatsapp | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') }}" target="_blank" class="font-bold text-slate-800 text-lg flex items-center gap-2 hover:text-green-600 transition">
+                            <i class="fa-brands fa-whatsapp text-green-500"></i> {{ ac.decisor.whatsapp }}
+                        </a>
+                    </div>
+                    <div class="border-t border-slate-100 pt-4">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">E-mail</p>
+                        <p class="font-bold text-slate-800">{{ ac.decisor.email or 'Não registrado' }}</p>
+                    </div>
+                    <div class="border-t border-slate-100 pt-4">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Endereço Principal</p>
+                        <p class="font-bold text-slate-800">{{ ac.decisor.endereco or 'Endereço não registrado' }}</p>
+                        <p class="text-sm font-medium text-slate-500 mt-1">CEP: {{ ac.decisor.cep or 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'crm/modal_editar_acolhimento.html' %}
+
+</div>
+{% endblock %}
