@@ -5,6 +5,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
 from datetime import datetime
+import calendar
+from sqlalchemy import extract
 
 load_dotenv()
 
@@ -52,6 +54,7 @@ class Paciente(db.Model):
 class Acolhimento(db.Model):
     __tablename__ = 'acolhimentos'
     id = db.Column(db.Integer, primary_key=True)
+    
     paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.id'))
     decisor_id = db.Column(db.Integer, db.ForeignKey('decisores.id'))
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
@@ -136,7 +139,6 @@ def acolhimentos():
     lista = Acolhimento.query.order_by(Acolhimento.data_inicio.desc()).all()
     return render_template('crm/acolhimentos.html', acolhimentos=lista)
 
-# Atualize a captura do Lead para criar os registros entrelaçados
 @app.route('/api/capturar-lead', methods=['POST'])
 def capturar_lead():
     # Cria o Decisor
@@ -155,17 +157,23 @@ def capturar_lead():
     db.session.add(novo_paciente)
     db.session.flush()
 
+    # A MÁGICA ACONTECE AQUI:
+    # Ele tenta pegar o ID oculto que o HTML enviou. 
+    # Se não tiver (porque veio da Landing Page pública), ele salva como None (sem dono).
+    usuario_id_form = request.form.get('usuario_id')
+    dono_id = int(usuario_id_form) if usuario_id_form else None
+
     # Cria o Acolhimento
     novo_acolhimento = Acolhimento(
         paciente_id = novo_paciente.id,
         decisor_id = novo_decisor.id,
         urgencia = request.form.get('urgencia', 'Média'),
-        status = 'Novo'
+        status = 'Novo',
+        usuario_id = dono_id  # <--- Salva o ID capturado
     )
     db.session.add(novo_acolhimento)
     db.session.commit()
     
-    # Se veio do CRM, volta pro CRM. Se veio do site, volta pro site.
     return redirect(request.referrer or url_for('index'))
 
 @app.route('/workbench/acolhimento/<int:id>')
@@ -338,21 +346,69 @@ def suporte():
 @app.route('/workbench/perfil')
 @login_required
 def perfil():
-    # Pegamos o total de acolhimentos deste usuário para as estatísticas
-    total = Acolhimento.query.filter_by(usuario_id=current_user.id).count()
-    ganhos = Acolhimento.query.filter_by(usuario_id=current_user.id, status='Internado (Ganho)').count()
+    # 1. Definir Mês e Ano para a Navegação do Calendário
+    hoje = datetime.now()
+    mes_atual = int(request.args.get('mes', hoje.month))
+    ano_atual = int(request.args.get('ano', hoje.year))
+
+    # Proteção de virada de ano (se avançar de Dezembro ou voltar de Janeiro)
+    if mes_atual > 12:
+        mes_atual = 1
+        ano_atual += 1
+    elif mes_atual < 1:
+        mes_atual = 12
+        ano_atual -= 1
+
+    # 2. Gerar a Matriz do Calendário (Dias da semana)
+    cal = calendar.monthcalendar(ano_atual, mes_atual)
+    nomes_meses = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+    nome_mes = nomes_meses[mes_atual]
+
+    # 3. MOTOR DE PERFORMANCE (Estatísticas Completas e à prova de falhas)
+    # Total de oportunidades deste consultor
+    total_acolhimentos = Acolhimento.query.filter_by(usuario_id=current_user.id).count()
     
-    # Cálculo simples de conversão
-    taxa = round((ganhos / total * 100), 1) if total > 0 else 0
-    
-    # Criamos um dicionário de estatísticas para o HTML usar
+    # Contagem de Fechamentos (Usa IN para garantir que pegue qualquer variação de nomenclatura)
+    ganhos = Acolhimento.query.filter(
+        Acolhimento.usuario_id == current_user.id,
+        Acolhimento.status.in_(['Internado (Ganho)', 'Ganho', 'Internado'])
+    ).count()
+
+    # Cálculo da taxa de conversão (com proteção contra divisão por zero)
+    taxa = round((ganhos / total_acolhimentos * 100), 1) if total_acolhimentos > 0 else 0
+
     stats = {
-        'total_acolhimentos': total,
-        'taxa_conversao': taxa
+        'total_acolhimentos': total_acolhimentos,
+        'taxa_conversao': taxa,
+        'ganhos': ganhos
     }
 
-    # PASSAMOS O current_user COM O NOME DE 'user' PARA O HTML
-    return render_template('crm/perfil.html', user=current_user, stats=stats)
+    # 4. BUSCA DE TAREFAS (Apenas do mês que está sendo visualizado)
+    tarefas_do_mes = Tarefa.query.filter(
+        Tarefa.usuario_id == current_user.id,
+        extract('month', Tarefa.data_vencimento) == mes_atual,
+        extract('year', Tarefa.data_vencimento) == ano_atual
+    ).all()
+
+    # Agrupar as tarefas por dia para o HTML ler facilmente (ex: dia 15 tem 2 tarefas)
+    tarefas_por_dia = {}
+    for t in tarefas_do_mes:
+        dia = t.data_vencimento.day
+        if dia not in tarefas_por_dia:
+            tarefas_por_dia[dia] = []
+        tarefas_por_dia[dia].append(t)
+
+    # 5. Enviar tudo pronto para o HTML renderizar
+    return render_template(
+        'crm/perfil.html', 
+        user=current_user, 
+        stats=stats, 
+        cal=cal, 
+        mes=mes_atual, 
+        ano=ano_atual, 
+        nome_mes=nome_mes, 
+        tarefas_por_dia=tarefas_por_dia
+    )
 
 @app.route('/logout')
 def logout():

@@ -72,61 +72,81 @@
                         <p class="text-2xl font-black mt-1">{{ stats.taxa_conversao }}%</p>
                     </div>
                     <div class="bg-white/10 p-4 rounded-2xl col-span-2">
-                        <p class="text-[10px] font-bold text-white/50 uppercase tracking-widest">Tempo Médio de Resposta</p>
-                        <p class="text-2xl font-black mt-1">14 min</p>
+                        <p class="text-[10px] font-bold text-white/50 uppercase tracking-widest">Status de Vendas</p>
+                        <p class="text-xs font-bold mt-2 text-white/80">
+                            {% if stats.taxa_conversao > 50 %}
+                                🔥 Você está acima da média!
+                            {% else %}
+                                🚀 Continue focado nos fechamentos.
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-span-8">
-            <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden h-full">
+        <div class="col-span-8" id="calendar-container">
+            <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden h-full transition-opacity duration-300" id="calendar-box">
+                
                 <div class="p-8 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h2 class="text-2xl font-black text-slate-900 tracking-tighter">Minha Agenda</h2>
-                        <p class="text-sm text-slate-500 font-medium">Atividades, retornos e prazos de internação.</p>
+                        <p class="text-sm text-slate-500 font-medium">Atividades e prazos.</p>
                     </div>
                     <div class="flex gap-2">
-                        <button class="p-3 hover:bg-slate-50 rounded-xl transition border border-slate-100"><i class="fa-solid fa-chevron-left"></i></button>
-                        <div class="px-6 py-2 bg-slate-50 rounded-xl font-black text-sm flex items-center justify-center">Maio, 2026</div>
-                        <button class="p-3 hover:bg-slate-50 rounded-xl transition border border-slate-100"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button data-url="?mes={{ mes - 1 }}&ano={{ ano }}" class="calendar-nav p-3 hover:bg-slate-50 rounded-xl transition border border-slate-100 flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-left pointer-events-none"></i>
+                        </button>
+                        
+                        <div class="px-6 py-2 bg-slate-50 rounded-xl font-black text-sm flex items-center justify-center min-w-[140px]">
+                            {{ nome_mes }}, {{ ano }}
+                        </div>
+                        
+                        <button data-url="?mes={{ mes + 1 }}&ano={{ ano }}" class="calendar-nav p-3 hover:bg-slate-50 rounded-xl transition border border-slate-100 flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-right pointer-events-none"></i>
+                        </button>
                     </div>
                 </div>
 
                 <div class="p-8">
                     <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-3xl overflow-hidden">
-                        {% for dia in ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] %}
+                        {% for dia in ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] %}
                         <div class="bg-slate-50 p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
                             {{ dia }}
                         </div>
                         {% endfor %}
 
-                        {% for i in range(1, 32) %}
-                        <div class="bg-white min-h-[120px] p-4 hover:bg-slate-50 transition group relative">
-                            <span class="text-sm font-black text-slate-300 group-hover:text-elo-blue">{{ i }}</span>
-                            
-                            {% if i == 7 %}
-                                <div class="mt-2 p-2 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                                    <p class="text-[9px] font-black text-red-700 uppercase">Internação</p>
-                                    <p class="text-[10px] font-bold text-red-900 leading-tight">Paciente: Marcos Silva</p>
-                                </div>
-                            {% endif %}
-
-                            {% if i == 10 %}
-                                <div class="mt-2 p-2 bg-elo-blue/10 border-l-4 border-elo-blue rounded-lg">
-                                    <p class="text-[9px] font-black text-elo-blue uppercase">Retorno</p>
-                                    <p class="text-[10px] font-bold text-elo-navy leading-tight">Ligar para Decisora Ana</p>
-                                </div>
-                            {% endif %}
-                        </div>
+                        {% for semana in cal %}
+                            {% for dia in semana %}
+                                {% if dia == 0 %}
+                                    <div class="bg-slate-50/50 min-h-[120px] p-4"></div>
+                                {% else %}
+                                    <div class="bg-white min-h-[120px] p-4 hover:bg-slate-50 transition group relative">
+                                        <span class="text-sm font-black text-slate-300 group-hover:text-elo-blue">{{ dia }}</span>
+                                        
+                                        {% if tarefas_por_dia.get(dia) %}
+                                            <div class="mt-2 space-y-2">
+                                                {% for tarefa in tarefas_por_dia[dia] %}
+                                                    <a href="/workbench/tarefa/{{ tarefa.id }}/concluir" 
+                                                    class="block p-2 rounded-lg transition {% if tarefa.prioridade == 'Alta' %} bg-red-50 border-l-4 border-red-500 hover:bg-red-100 {% else %} bg-elo-blue/10 border-l-4 border-elo-blue hover:bg-elo-blue/20 {% endif %}">
+                                                        <p class="text-[9px] font-black uppercase {% if tarefa.prioridade == 'Alta' %} text-red-700 {% else %} text-elo-blue {% endif %}">
+                                                            {{ tarefa.prioridade }}
+                                                        </p>
+                                                        <p class="text-[10px] font-bold text-slate-700 leading-tight truncate" title="{{ tarefa.descricao }}">
+                                                            {{ tarefa.descricao }}
+                                                        </p>
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
 
-    </div>
-</div>
 
 <div class="px-10 pb-10">
     <div class="bg-slate-900 rounded-[2.5rem] p-10 flex items-center justify-between">
@@ -144,4 +164,43 @@
         </a>
     </div>
 </div>
+
+<script>
+    document.addEventListener('click', function(e) {
+        // Verifica se clicou no botão de navegação do calendário
+        const btn = e.target.closest('.calendar-nav');
+        if (!btn) return;
+
+        e.preventDefault();
+        
+        const url = btn.getAttribute('data-url');
+        const container = document.getElementById('calendar-container');
+        const box = document.getElementById('calendar-box');
+        
+        // Efeito visual de carregamento (deixa o calendário meio transparente)
+        box.style.opacity = '0.4';
+        box.style.pointerEvents = 'none';
+
+        // Busca a página no fundo
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                // Transforma o texto recebido em um documento HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Pega só o miolo do calendário atualizado e joga na tela
+                const newContent = doc.getElementById('calendar-container').innerHTML;
+                container.innerHTML = newContent;
+                
+                // Tira o efeito de transparência
+                document.getElementById('calendar-box').style.opacity = '1';
+                document.getElementById('calendar-box').style.pointerEvents = 'auto';
+            })
+            .catch(err => {
+                console.error("Erro ao carregar calendário:", err);
+                box.style.opacity = '1';
+            });
+    });
+</script>
 {% endblock %}
