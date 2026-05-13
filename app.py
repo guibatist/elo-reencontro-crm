@@ -4,9 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import date, datetime, timedelta
 import calendar
-from sqlalchemy import extract
+from sqlalchemy import extract, func
 import io
 import uuid
 import openpyxl
@@ -325,11 +325,65 @@ def login_crm():
 @app.route('/workbench/dashboard')
 @login_required
 def dashboard():
-    # Agora o Dashboard busca dados da nova tabela 'Acolhimento'
-    total_acolhimentos = Acolhimento.query.count()
-    novos = Acolhimento.query.filter_by(status='Novo').count()
-    
-    return render_template('crm/dashboard.html', total=total_acolhimentos, novos=novos)
+    hoje = date.today()
+    mes_atual = hoje.month
+    ano_atual = hoje.year
+
+    # KPIs Básicos (Cartões do Topo)
+    leads_hoje = Acolhimento.query.filter(func.date(Acolhimento.data_inicio) == hoje).count()
+    em_atendimento = Acolhimento.query.filter(~Acolhimento.status.in_(['Internado (Ganho)', 'Perdido'])).count()
+    internacoes_mes = Acolhimento.query.filter(
+        Acolhimento.status == 'Internado (Ganho)',
+        func.extract('month', Acolhimento.data_inicio) == mes_atual,
+        func.extract('year', Acolhimento.data_inicio) == ano_atual
+    ).count()
+
+    # B.I. 1: Linha do Tempo (Últimos 7 dias)
+    datas_timeline = []
+    dados_timeline = []
+    for i in range(6, -1, -1):
+        d = hoje - timedelta(days=i)
+        datas_timeline.append(d.strftime('%d/%m'))
+        # Conta leads exatos daquele dia
+        count_dia = Acolhimento.query.filter(func.date(Acolhimento.data_inicio) == d).count()
+        dados_timeline.append(count_dia)
+
+    # B.I. 2: Funil de Status
+    status_counts = db.session.query(Acolhimento.status, func.count(Acolhimento.id)).group_by(Acolhimento.status).all()
+    labels_funil = [str(s[0]) if s[0] else "Sem Status" for s in status_counts]
+    dados_funil = [int(s[1]) for s in status_counts]
+
+    # B.I. 3: Mapa de Urgência
+    urgencia_counts = db.session.query(Acolhimento.urgencia, func.count(Acolhimento.id)).group_by(Acolhimento.urgencia).all()
+    labels_urgencia = [str(u[0]) if u[0] else "N/A" for u in urgencia_counts]
+    dados_urgencia = [int(u[1]) for u in urgencia_counts]
+
+    # B.I. 4: Performance por Consultor
+    consultores_raw = db.session.query(Acolhimento.usuario_id, func.count(Acolhimento.id)).group_by(Acolhimento.usuario_id).all()
+    labels_consultor = []
+    dados_consultor = []
+    for uid, count in consultores_raw:
+        if uid:
+            user = db.session.get(Usuario, uid)
+            labels_consultor.append(user.nome.split()[0] if user else "Sistema")
+        else:
+            labels_consultor.append("Site Público")
+        dados_consultor.append(int(count))
+
+    # B.I. 5: Taxa de Conversão Global
+    total_historico = Acolhimento.query.count()
+    total_ganhos = Acolhimento.query.filter_by(status='Internado (Ganho)').count()
+    taxa_conversao = int((total_ganhos / total_historico * 100)) if total_historico > 0 else 0
+
+    return render_template(
+        'crm/dashboard.html',
+        leads_hoje=leads_hoje, em_atendimento=em_atendimento, internacoes_mes=internacoes_mes,
+        datas_timeline=datas_timeline, dados_timeline=dados_timeline,
+        labels_funil=labels_funil, dados_funil=dados_funil,
+        labels_urgencia=labels_urgencia, dados_urgencia=dados_urgencia,
+        labels_consultor=labels_consultor, dados_consultor=dados_consultor,
+        taxa_conversao=taxa_conversao
+    )
 
 @app.route('/workbench/pacientes')
 @login_required
