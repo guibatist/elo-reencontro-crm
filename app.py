@@ -949,5 +949,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    # O código aqui dentro será IGNORADO pela Vercel
     app.run(debug=True)
