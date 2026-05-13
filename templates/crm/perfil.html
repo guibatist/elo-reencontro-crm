@@ -27,7 +27,6 @@
     <div class="grid grid-cols-12 gap-10">
         
         <div class="col-span-4 space-y-8">
-            
             <div class="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm">
                 <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
                     <i class="fa-solid fa-id-card text-elo-blue"></i>
@@ -54,7 +53,7 @@
                     <div class="bg-orange-50 border border-orange-100 p-4 rounded-2xl">
                         <p class="text-xs text-orange-700 leading-relaxed font-medium">
                             <i class="fa-solid fa-circle-info mr-1"></i> 
-                            Para alterar seus dados de contato, abra um chamado com o Suporte de TI.
+                            Para alterar contatos, abra um chamado no TI.
                         </p>
                     </div>
                 </div>
@@ -83,34 +82,33 @@
                     </div>
                 </div>
             </div>
-
-        <div class="col-span-8" id="calendar-container">
-            <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden h-full transition-opacity duration-300" id="calendar-box">
+        </div> <div class="col-span-8" id="calendar-container">
+            <div class="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[750px] transition-opacity duration-300" id="calendar-box">
                 
-                <div class="p-8 border-b border-slate-100 flex items-center justify-between">
+                <div class="p-10 border-b border-slate-100 flex items-center justify-between bg-white">
                     <div>
-                        <h2 class="text-2xl font-black text-slate-900 tracking-tighter">Minha Agenda</h2>
-                        <p class="text-sm text-slate-500 font-medium">Atividades e prazos.</p>
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tighter">Minha Agenda</h2>
+                        <p class="text-sm text-slate-500 font-medium">Gestão de retornos e compromissos.</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button data-url="?mes={{ mes - 1 }}&ano={{ ano }}" class="calendar-nav p-3 hover:bg-slate-50 rounded-xl transition border border-slate-100 flex items-center justify-center">
+                    <div class="flex items-center gap-4">
+                        <button data-url="?mes={{ mes - 1 }}&ano={{ ano }}" class="calendar-nav w-12 h-12 hover:bg-slate-50 rounded-2xl transition border border-slate-100 flex items-center justify-center text-slate-600">
                             <i class="fa-solid fa-chevron-left pointer-events-none"></i>
                         </button>
                         
-                        <div class="px-6 py-2 bg-slate-50 rounded-xl font-black text-sm flex items-center justify-center min-w-[140px]">
-                            {{ nome_mes }}, {{ ano }}
+                        <div class="px-8 py-3 bg-slate-900 rounded-2xl font-black text-sm text-white flex items-center justify-center min-w-[180px] shadow-lg shadow-slate-200">
+                            {{ nome_mes }} {{ ano }}
                         </div>
                         
-                        <button data-url="?mes={{ mes + 1 }}&ano={{ ano }}" class="calendar-nav p-3 hover:bg-slate-50 rounded-xl transition border border-slate-100 flex items-center justify-center">
+                        <button data-url="?mes={{ mes + 1 }}&ano={{ ano }}" class="calendar-nav w-12 h-12 hover:bg-slate-50 rounded-2xl transition border border-slate-100 flex items-center justify-center text-slate-600">
                             <i class="fa-solid fa-chevron-right pointer-events-none"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="p-8">
-                    <div class="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-3xl overflow-hidden">
+                <div class="flex-1 p-8 bg-slate-50/50">
+                    <div class="grid grid-cols-7 gap-3 h-full">
                         {% for dia in ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] %}
-                        <div class="bg-slate-50 p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                        <div class="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest pb-4">
                             {{ dia }}
                         </div>
                         {% endfor %}
@@ -118,26 +116,21 @@
                         {% for semana in cal %}
                             {% for dia in semana %}
                                 {% if dia == 0 %}
-                                    <div class="bg-slate-50/50 min-h-[120px] p-4"></div>
+                                    <div class="bg-slate-100/40 rounded-3xl border border-transparent"></div>
                                 {% else %}
-                                    <div class="bg-white min-h-[120px] p-4 hover:bg-slate-50 transition group relative">
-                                        <span class="text-sm font-black text-slate-300 group-hover:text-elo-blue">{{ dia }}</span>
+                                    <div class="bg-white min-h-[110px] p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-elo-blue transition-all group relative flex flex-col">
+                                        <span class="text-sm font-black text-slate-300 group-hover:text-elo-blue mb-2">{{ dia }}</span>
                                         
-                                        {% if tarefas_por_dia.get(dia) %}
-                                            <div class="mt-2 space-y-2">
+                                        <div class="space-y-1 overflow-y-auto max-h-[80px] custom-scrollbar">
+                                            {% if tarefas_por_dia.get(dia) %}
                                                 {% for tarefa in tarefas_por_dia[dia] %}
                                                     <a href="/workbench/tarefa/{{ tarefa.id }}/concluir" 
-                                                    class="block p-2 rounded-lg transition {% if tarefa.prioridade == 'Alta' %} bg-red-50 border-l-4 border-red-500 hover:bg-red-100 {% else %} bg-elo-blue/10 border-l-4 border-elo-blue hover:bg-elo-blue/20 {% endif %}">
-                                                        <p class="text-[9px] font-black uppercase {% if tarefa.prioridade == 'Alta' %} text-red-700 {% else %} text-elo-blue {% endif %}">
-                                                            {{ tarefa.prioridade }}
-                                                        </p>
-                                                        <p class="text-[10px] font-bold text-slate-700 leading-tight truncate" title="{{ tarefa.descricao }}">
-                                                            {{ tarefa.descricao }}
-                                                        </p>
+                                                       class="block px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all {% if tarefa.prioridade == 'Alta' %} bg-red-50 text-red-700 border-l-2 border-red-500 hover:bg-red-100 {% else %} bg-blue-50 text-elo-blue border-l-2 border-elo-blue hover:bg-blue-100 {% endif %}">
+                                                        {{ tarefa.descricao[:15] }}{% if tarefa.descricao|length > 15 %}...{% endif %}
                                                     </a>
                                                 {% endfor %}
-                                            </div>
-                                        {% endif %}
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 {% endif %}
                             {% endfor %}
@@ -145,18 +138,18 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> </div>
+</div>
 
-
-<div class="px-10 pb-10">
-    <div class="bg-slate-900 rounded-[2.5rem] p-10 flex items-center justify-between">
+<div class="px-10 pb-10 mt-8">
+    <div class="bg-slate-900 rounded-[2.5rem] p-10 flex items-center justify-between shadow-2xl">
         <div class="flex items-center gap-6">
             <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white text-2xl">
                 <i class="fa-solid fa-headset"></i>
             </div>
             <div>
                 <h3 class="text-white text-xl font-black">Precisa de ajuda com o Elo Workbench?</h3>
-                <p class="text-slate-400">Nossa equipe de TI está pronta para te atender em caso de bugs ou mudanças cadastrais.</p>
+                <p class="text-slate-400">Nossa equipe de TI está pronta para te atender.</p>
             </div>
         </div>
         <a href="#" class="bg-white text-slate-950 px-10 py-4 rounded-2xl font-black hover:bg-slate-200 transition">
@@ -167,7 +160,6 @@
 
 <script>
     document.addEventListener('click', function(e) {
-        // Verifica se clicou no botão de navegação do calendário
         const btn = e.target.closest('.calendar-nav');
         if (!btn) return;
 
@@ -177,23 +169,17 @@
         const container = document.getElementById('calendar-container');
         const box = document.getElementById('calendar-box');
         
-        // Efeito visual de carregamento (deixa o calendário meio transparente)
         box.style.opacity = '0.4';
         box.style.pointerEvents = 'none';
 
-        // Busca a página no fundo
-        fetch(url)
+        fetch(url, { cache: "no-store" })
             .then(response => response.text())
             .then(html => {
-                // Transforma o texto recebido em um documento HTML
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                
-                // Pega só o miolo do calendário atualizado e joga na tela
                 const newContent = doc.getElementById('calendar-container').innerHTML;
                 container.innerHTML = newContent;
                 
-                // Tira o efeito de transparência
                 document.getElementById('calendar-box').style.opacity = '1';
                 document.getElementById('calendar-box').style.pointerEvents = 'auto';
             })
@@ -203,4 +189,9 @@
             });
     });
 </script>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+</style>
 {% endblock %}
