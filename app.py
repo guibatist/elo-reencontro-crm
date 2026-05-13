@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, redirect, url_for, request, flash, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from dotenv import load_dotenv
 from datetime import date, datetime, timedelta
 import calendar
@@ -42,8 +42,22 @@ class Usuario(UserMixin, db.Model):
     sobrenome = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
+    # A user_key agora é o USERNAME de login (ex: joao.almeida)
     user_key = db.Column(db.String(100), unique=True, nullable=False)
     role = db.Column(db.String(20), default='consultor')
+    is_active = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def gerar_username(self):
+        # Transforma "João" e "Almeida" em "joao.almeida"
+        import unicodedata
+        import re
+        
+        base = f"{self.nome}.{self.sobrenome}".lower()
+        # Remove acentos e caracteres especiais
+        nfkd = unicodedata.normalize('NFKD', base)
+        username = "".join([c for c in nfkd if not unicodedata.combining(c)])
+        return re.sub(r'[^a-z0-9.]', '', username)
 
 class Decisor(db.Model):
     __tablename__ = 'decisores'
@@ -161,53 +175,51 @@ def agente_de_cura():
 @app.route('/workbench/acolhimentos')
 @login_required
 def acolhimentos():
-    # Puxa todos os acolhimentos ativos
-    lista = Acolhimento.query.order_by(Acolhimento.data_inicio.desc()).all()
+    if current_user.role == 'admin':
+        lista = Acolhimento.query.order_by(Acolhimento.data_inicio.desc()).all()
+    else:
+        lista = Acolhimento.query.filter_by(usuario_id=current_user.id).order_by(Acolhimento.data_inicio.desc()).all()
+    
     return render_template('crm/acolhimentos.html', acolhimentos=lista)
 
 @app.route('/api/capturar-lead', methods=['POST'])
 def capturar_lead():
-    # Cria o Decisor
     novo_decisor = Decisor(
-        nome_completo = request.form.get('nome_familiar'),
-        whatsapp = request.form.get('whatsapp'),
-        parentesco = request.form.get('parentesco')
+        nome_completo=request.form.get('nome_familiar'),
+        whatsapp=request.form.get('whatsapp'),
+        parentesco=request.form.get('parentesco')
     )
     db.session.add(novo_decisor)
     db.session.flush()
 
-    # Cria o Paciente
     novo_paciente = Paciente(
-        nome_completo = request.form.get('nome_paciente')
+        nome_completo=request.form.get('nome_paciente')
     )
     db.session.add(novo_paciente)
     db.session.flush()
 
-    # A MÁGICA ACONTECE AQUI:
-    # Ele tenta pegar o ID oculto que o HTML enviou. 
-    # Se não tiver (porque veio da Landing Page pública), ele salva como None (sem dono).
-    usuario_id_form = request.form.get('usuario_id')
-    dono_id = int(usuario_id_form) if usuario_id_form else None
+    # O dono é quem está logado. Se vier da Landing Page, fica sem dono (None).
+    dono_id = current_user.id if current_user.is_authenticated else None
 
-    # Cria o Acolhimento
     novo_acolhimento = Acolhimento(
-        paciente_id = novo_paciente.id,
-        decisor_id = novo_decisor.id,
-        urgencia = request.form.get('urgencia', 'Média'),
-        status = 'Novo',
-        usuario_id = dono_id  # <--- Salva o ID capturado
+        paciente_id=novo_paciente.id,
+        decisor_id=novo_decisor.id,
+        urgencia=request.form.get('urgencia', 'Média'),
+        status='Novo',
+        usuario_id=dono_id
     )
     db.session.add(novo_acolhimento)
     db.session.commit()
     
-    return redirect(request.referrer or url_for('index'))
+    return redirect(request.referrer or url_for('dashboard'))
 
 @app.route('/workbench/acolhimento/<int:id>')
 @login_required
 def ver_acolhimento(id):
     # Puxa o acolhimento e já traz o paciente e decisor junto
     oportunidade = Acolhimento.query.get_or_404(id)
-    return render_template('crm/detalhes_acolhimento.html', ac=oportunidade)
+    consultores = Usuario.query.filter_by(is_active=True).all() if current_user.role == 'admin' else []
+    return render_template('crm/detalhes_acolhimento.html', ac=oportunidade, consultores=consultores)
 
 @app.route('/api/atualizar-acolhimento/<int:id>', methods=['POST'])
 @login_required
@@ -261,33 +273,15 @@ def atualizar_acolhimento(id):
     flash('Dossiê atualizado com sucesso!')
     return redirect(url_for('ver_acolhimento', id=ac.id))
 
-@app.route('/api/acolhimento/<int:id>/nota', methods=['POST'])
-@login_required
-def adicionar_nota(id):
-    texto = request.form.get('anotacao')
-    if texto:
-        nova_nota = Atividade(
-            acolhimento_id=id,
-            usuario_id=current_user.id,
-            anotacao=texto
-        )
-        db.session.add(nova_nota)
-        db.session.commit()
-    return redirect(url_for('ver_acolhimento', id=id))
-
 @app.route('/api/acolhimento/<int:id>/tarefa', methods=['POST'])
 @login_required
 def adicionar_tarefa(id):
-    # Pega os valores do formulário HTML
-    data_form = request.form.get('date') # O HTML manda 'date'
-    hora_form = request.form.get('hora') # Vamos adicionar esse campo no HTML
-    
+    # A tarefa pertence obrigatoriamente a quem a criou
     nova_tarefa = Tarefa(
         acolhimento_id=id,
         usuario_id=current_user.id,
         descricao=request.form.get('descricao'),
-        data_vencimento=data_form,
-        hora_vencimento=hora_form if hora_form else None,
+        data_vencimento=request.form.get('date'),
         prioridade=request.form.get('prioridade', 'Média'),
         status='Pendente'
     )
@@ -327,18 +321,26 @@ def concluir_tarefa(id):
 
 @app.route('/workbench')
 def workbench_index():
-    return redirect(url_for('login_crm'))
+    return redirect(url_for('login'))
 
-@app.route('/workbench/login', methods=['GET', 'POST'])
-def login_crm():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
-        u_key = request.form.get('user_key')
-        u_pass = request.form.get('password')
-        agente = Usuario.query.filter_by(user_key=u_key).first()
-        if agente and check_password_hash(agente.senha, u_pass):
-            login_user(agente)
+        # Agora o backend lê EXATAMENTE o que o seu HTML envia
+        username_login = request.form.get('username')
+        senha_digitada = request.form.get('password') # <-- O erro estava aqui
+
+        if not username_login or not senha_digitada:
+            return "Por favor, preencha todos os campos.", 400
+        
+        user = Usuario.query.filter_by(user_key=username_login.lower().strip()).first()
+        
+        if user and check_password_hash(user.senha, senha_digitada):
+            login_user(user)
             return redirect(url_for('dashboard'))
-        flash('Acesso Negado. Verifique os dados.')
+            
+        return "Usuário ou senha inválidos", 401
+        
     return render_template('crm/login.html')
 
 @app.route('/workbench/dashboard')
@@ -348,60 +350,64 @@ def dashboard():
     mes_atual = hoje.month
     ano_atual = hoje.year
 
-    # KPIs Básicos (Cartões do Topo)
-    leads_hoje = Acolhimento.query.filter(func.date(Acolhimento.data_inicio) == hoje).count()
-    em_atendimento = Acolhimento.query.filter(~Acolhimento.status.in_(['Internado (Ganho)', 'Perdido'])).count()
-    internacoes_mes = Acolhimento.query.filter(
+    # === SEGURANÇA: DEFINE A BASE DE DADOS BASEADA NO CARGO ===
+    if current_user.role == 'admin':
+        # Superadmin: Vê absolutamente tudo
+        q_acolhimentos = Acolhimento.query
+        q_tarefas = Tarefa.query
+    else:
+        # Consultor (João): Vê apenas o que pertence ao ID dele
+        q_acolhimentos = Acolhimento.query.filter_by(usuario_id=current_user.id)
+        q_tarefas = Tarefa.query.filter_by(usuario_id=current_user.id)
+
+    # KPIs (Usando data_inicio conforme definido na sua Classe na linha 58)
+    leads_hoje = q_acolhimentos.filter(func.date(Acolhimento.data_inicio) == hoje).count()
+    em_atendimento = q_acolhimentos.filter(~Acolhimento.status.in_(['Internado (Ganho)', 'Perdido'])).count()
+    internacoes_mes = q_acolhimentos.filter(
         Acolhimento.status == 'Internado (Ganho)',
         func.extract('month', Acolhimento.data_inicio) == mes_atual,
         func.extract('year', Acolhimento.data_inicio) == ano_atual
     ).count()
 
-    # B.I. 1: Linha do Tempo (Últimos 7 dias)
+    # BUSCA DE DADOS PARA A LISTAGEM (O que faz os dados aparecerem no HTML)
+    acolhimentos = q_acolhimentos.order_by(Acolhimento.data_inicio.desc()).all()
+    tarefas = q_tarefas.filter_by(status='Pendente').all()
+
+    # B.I. 1: Linha do Tempo (7 dias)
     datas_timeline = []
     dados_timeline = []
     for i in range(6, -1, -1):
         d = hoje - timedelta(days=i)
         datas_timeline.append(d.strftime('%d/%m'))
-        # Conta leads exatos daquele dia
-        count_dia = Acolhimento.query.filter(func.date(Acolhimento.data_inicio) == d).count()
+        count_dia = q_acolhimentos.filter(func.date(Acolhimento.data_inicio) == d).count()
         dados_timeline.append(count_dia)
 
-    # B.I. 2: Funil de Status
-    status_counts = db.session.query(Acolhimento.status, func.count(Acolhimento.id)).group_by(Acolhimento.status).all()
-    labels_funil = [str(s[0]) if s[0] else "Sem Status" for s in status_counts]
-    dados_funil = [int(s[1]) for s in status_counts]
-
-    # B.I. 3: Mapa de Urgência
-    urgencia_counts = db.session.query(Acolhimento.urgencia, func.count(Acolhimento.id)).group_by(Acolhimento.urgencia).all()
-    labels_urgencia = [str(u[0]) if u[0] else "N/A" for u in urgencia_counts]
-    dados_urgencia = [int(u[1]) for u in urgencia_counts]
-
     # B.I. 4: Performance por Consultor
-    consultores_raw = db.session.query(Acolhimento.usuario_id, func.count(Acolhimento.id)).group_by(Acolhimento.usuario_id).all()
     labels_consultor = []
     dados_consultor = []
-    for uid, count in consultores_raw:
-        if uid:
-            user = db.session.get(Usuario, uid)
-            labels_consultor.append(user.nome.split()[0] if user else "Sistema")
-        else:
-            labels_consultor.append("Site Público")
-        dados_consultor.append(int(count))
+    if current_user.role == 'admin':
+        consultores_raw = db.session.query(Acolhimento.usuario_id, func.count(Acolhimento.id)).group_by(Acolhimento.usuario_id).all()
+        for uid, count in consultores_raw:
+            user = db.session.get(Usuario, uid) if uid else None
+            labels_consultor.append(user.nome if user else "Site Público")
+            dados_consultor.append(int(count))
+    else:
+        labels_consultor = [current_user.nome]
+        dados_consultor = [len(acolhimentos)]
 
-    # B.I. 5: Taxa de Conversão Global
-    total_historico = Acolhimento.query.count()
-    total_ganhos = Acolhimento.query.filter_by(status='Internado (Ganho)').count()
+    # Taxa de Conversão Global
+    total_historico = q_acolhimentos.count()
+    total_ganhos = q_acolhimentos.filter_by(status='Internado (Ganho)').count()
     taxa_conversao = int((total_ganhos / total_historico * 100)) if total_historico > 0 else 0
 
     return render_template(
         'crm/dashboard.html',
+        acolhimentos=acolhimentos, tarefas=tarefas, # <--- ENVIANDO OS DADOS PARA A TELA
         leads_hoje=leads_hoje, em_atendimento=em_atendimento, internacoes_mes=internacoes_mes,
         datas_timeline=datas_timeline, dados_timeline=dados_timeline,
-        labels_funil=labels_funil, dados_funil=dados_funil,
-        labels_urgencia=labels_urgencia, dados_urgencia=dados_urgencia,
         labels_consultor=labels_consultor, dados_consultor=dados_consultor,
-        taxa_conversao=taxa_conversao
+        taxa_conversao=taxa_conversao,
+        labels_funil=[], dados_funil=[], labels_urgencia=[], dados_urgencia=[] # Fallback para não quebrar o Chart.js
     )
 
 @app.route('/workbench/pacientes')
@@ -413,9 +419,13 @@ def pacientes():
 @app.route('/workbench/tarefas')
 @login_required
 def listar_tarefas():
-    # Puxa todas as tarefas pendentes do usuário logado
-    tarefas_pendentes = Tarefa.query.filter_by(usuario_id=current_user.id, status='Pendente').order_by(Tarefa.data_vencimento.asc()).all()
-    tarefas_concluidas = Tarefa.query.filter_by(usuario_id=current_user.id, status='Concluída').order_by(Tarefa.data_vencimento.desc()).limit(10).all()
+    if current_user.role == 'admin':
+        tarefas_pendentes = Tarefa.query.filter_by(status='Pendente').order_by(Tarefa.data_vencimento.asc()).all()
+        tarefas_concluidas = Tarefa.query.filter_by(status='Concluída').order_by(Tarefa.id.desc()).limit(10).all()
+    else:
+        tarefas_pendentes = Tarefa.query.filter_by(usuario_id=current_user.id, status='Pendente').order_by(Tarefa.data_vencimento.asc()).all()
+        tarefas_concluidas = Tarefa.query.filter_by(usuario_id=current_user.id, status='Concluída').order_by(Tarefa.id.desc()).limit(10).all()
+        
     return render_template('crm/tarefas.html', pendentes=tarefas_pendentes, concluidas=tarefas_concluidas)
 
 @app.route('/workbench/suporte')
@@ -624,11 +634,13 @@ def relatorios():
 @app.route('/workbench/chamados')
 @login_required
 def chamados():
-    if current_user.role == 'admin':
-        meus_chamados = Chamado.query.order_by(Chamado.data_creacao.desc()).all()
+    # Admin vê todos os chamados de todo mundo. Consultor vê só os seus.
+    if getattr(current_user, 'role', 'consultor') == 'admin':
+        lista_chamados = Chamado.query.order_by(Chamado.data_criacao.desc()).all()
     else:
-        meus_chamados = Chamado.query.filter_by(usuario_id=current_user.id).order_by(Chamado.data_criacao.desc()).all()
-    return render_template('crm/chamados.html', chamados=meus_chamados)
+        lista_chamados = Chamado.query.filter_by(usuario_id=current_user.id).order_by(Chamado.data_criacao.desc()).all()
+    
+    return render_template('crm/chamados.html', chamados=lista_chamados)
 
 @app.route('/workbench/chamados/novo', methods=['POST'])
 @login_required
@@ -655,7 +667,68 @@ def novo_chamado():
 @app.route('/workbench/configuracoes')
 @login_required
 def configuracoes():
-    return render_template('crm/configuracoes.html')
+    usuarios = []
+    if getattr(current_user, 'role', 'consultor') == 'admin':
+        usuarios = Usuario.query.all() # Admin vê a lista de gestão
+    
+    return render_template('crm/configuracoes.html', usuarios=usuarios)
+
+# Rota para Bloquear/Editar (Apenas Admin)
+@app.route('/workbench/configuracoes/usuario/<int:id>/status', methods=['POST'])
+@login_required
+def alterar_status_usuario(id):
+    if current_user.role != 'admin':
+        return "Acesso negado", 403
+    
+    user = db.session.get(Usuario, id)
+    # Lógica simples: se você tiver uma coluna 'ativo' no banco:
+    # user.ativo = not user.ativo 
+    db.session.commit()
+    return redirect(url_for('configuracoes'))
+
+# --- API: EDITAR UTILIZADOR (EMAIL E STATUS) ---
+@app.route('/api/usuarios/<int:id>/editar', methods=['POST'])
+@login_required
+def editar_usuario(id):
+    if current_user.role != 'admin':
+        return "Acesso Negado", 403
+        
+    user = db.session.get(Usuario, id)
+    user.email = request.form.get('email')
+    user.nome = request.form.get('nome')
+    # Toggle de Ativo/Inativo
+    user.is_active = 'is_active' in request.form 
+    
+    db.session.commit()
+    return redirect(url_for('configuracoes'))
+
+@app.route('/api/usuarios/novo', methods=['POST'])
+@login_required
+def criar_usuario():
+    if current_user.role != 'admin':
+        return "Acesso Negado", 403
+    
+    novo_user = Usuario(
+        nome=request.form.get('nome'),
+        sobrenome=request.form.get('sobrenome'),
+        email=request.form.get('email'),
+        senha=generate_password_hash(request.form.get('senha')),
+        role=request.form.get('role', 'consultor')
+    )
+    
+    # Gera a user_key automaticamente (joao.almeida)
+    novo_user.user_key = novo_user.gerar_username()
+    
+    # Verifica se já existe esse username (evita duplicidade)
+    tentativas = 1
+    original_key = novo_user.user_key
+    while Usuario.query.filter_by(user_key=novo_user.user_key).first():
+        novo_user.user_key = f"{original_key}{tentativas}"
+        tentativas += 1
+
+    db.session.add(novo_user)
+    db.session.commit()
+    return redirect(url_for('configuracoes'))
 
 @app.route('/logout')
 def logout():

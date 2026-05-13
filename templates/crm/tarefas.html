@@ -32,6 +32,15 @@
 
                     <div class="flex items-center gap-10">
                         <div class="text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Proprietário</p>
+                            <div class="flex items-center justify-center gap-1.5 mt-1">
+                                <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                                    {{ tarefa.acolhimento.agente.nome if tarefa.acolhimento.agente else 'Sistema' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
                             <p class="text-[10px] font-black text-slate-400 uppercase">Prioridade</p>
                             <span class="text-xs font-bold {% if tarefa.prioridade == 'Alta' %} text-red-600 {% else %} text-orange-500 {% endif %}">
                                 ● {{ tarefa.prioridade }}
@@ -73,7 +82,12 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-500 text-base line-through">{{ tarefa.descricao }}</h3>
-                            <p class="text-[10px] text-slate-400 uppercase font-black">{{ tarefa.acolhimento.paciente.nome_completo }}</p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-[10px] text-slate-400 uppercase font-black">{{ tarefa.acolhimento.paciente.nome_completo }}</p>
+                                <span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 rounded font-bold">
+                                    Resp: {{ tarefa.acolhimento.agente.nome if tarefa.acolhimento.agente else 'Sist.' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="text-xs font-bold text-slate-400 italic">Relatório Enviado</div>
