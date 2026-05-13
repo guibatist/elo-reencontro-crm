@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash
@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 from datetime import datetime
 import calendar
 from sqlalchemy import extract
+import io
+import uuid
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+
 
 load_dotenv()
 
@@ -31,6 +36,7 @@ class Usuario(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     user_key = db.Column(db.String(100), unique=True, nullable=False)
+    role = db.Column(db.String(20), default='consultor')
 
 class Decisor(db.Model):
     __tablename__ = 'decisores'
@@ -74,6 +80,7 @@ class Acolhimento(db.Model):
     # Relacionamentos para facilitar a busca no HTML
     paciente = db.relationship('Paciente', backref='acolhimentos')
     decisor = db.relationship('Decisor', backref='acolhimentos')
+    agente = db.relationship('Usuario', backref='meus_acolhimentos')
 
     # Relação com tarefas
     tarefas = db.relationship('Tarefa', backref='acolhimento', order_by='Tarefa.data_vencimento.asc()')
@@ -105,7 +112,7 @@ class Atividade(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Usuario.query.get(int(user_id))
+    return db.session.get(Usuario, int(user_id))
 
 
 # ==========================================
@@ -409,6 +416,136 @@ def perfil():
         nome_mes=nome_mes, 
         tarefas_por_dia=tarefas_por_dia
     )
+
+@app.route('/workbench/relatorios', methods=['GET', 'POST'])
+@login_required
+def relatorios():
+    # Definição dos campos disponíveis por tabela
+    MAPA_CAMPOS = {
+        'acolhimentos': {
+            'id': 'ID da Oportunidade',
+            'status': 'Status do Funil',
+            'urgencia': 'Urgência',
+            'investimento_estimado': 'Valor Estimado',
+            'paciente.nome_completo': 'Nome do Paciente',
+            'decisor.nome_completo': 'Nome do Familiar',
+            'usuario.nome': 'Consultor Responsável',
+            'data_inicio': 'Data de Abertura'
+        },
+        'tarefas': {
+            'id': 'ID da Tarefa',
+            'descricao': 'Descrição',
+            'prioridade': 'Prioridade',
+            'status': 'Status da Atividade',
+            'data_vencimento': 'Data de Prazo',
+            'acolhimento.paciente.nome_completo': 'Paciente Vinculado'
+        }
+    }
+
+    if request.method == 'POST':
+        tabela = request.form.get('tabela')
+        colunas_selecionadas_raw = request.form.getlist('colunas')
+        filtro_status = request.form.get('filtro_status')
+        exportar = request.form.get('exportar') == 'true'
+
+        # FILTRO DE SEGURANÇA: Limpa colunas invisíveis enviadas por engano pelo HTML
+        colunas_selecionadas = [c for c in colunas_selecionadas_raw if c in MAPA_CAMPOS.get(tabela, {})]
+
+        # 1. Início da Query
+        if tabela == 'acolhimentos':
+            query = Acolhimento.query
+        else:
+            query = Tarefa.query
+
+        # 2. Regra de Segurança (Superadmin vs Consultor)
+        if getattr(current_user, 'role', 'consultor') != 'admin':
+            query = query.filter_by(usuario_id=current_user.id)
+
+        # 3. Filtros Dinâmicos (Exemplo por Status)
+        if filtro_status:
+            query = query.filter_by(status=filtro_status)
+
+        resultados = query.all()
+
+        # 4. Se for apenas para visualizar na tela (Report Builder)
+        if not exportar:
+            return render_template('crm/relatorios.html', 
+                                   mapa=MAPA_CAMPOS, 
+                                   resultados=resultados, 
+                                   colunas=colunas_selecionadas,
+                                   tabela_ativa=tabela)
+
+        # ==========================================
+        # 5. GERADOR DE EXCEL PREMIUM (.xlsx)
+        # ==========================================
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = f"Relatório de {tabela.capitalize()}"
+
+        # Estilos Corporativos Elo Reencontro
+        header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True)
+        center_alignment = Alignment(horizontal="center", vertical="center")
+
+        # Escreve o Cabeçalho traduzido
+        cabecalho = [MAPA_CAMPOS[tabela][c] for c in colunas_selecionadas]
+        ws.append(cabecalho)
+
+        # Aplica o estilo na primeira linha
+        for cell in ws[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = center_alignment
+
+        # Preenche os dados reais
+        for item in resultados:
+            linha = []
+            for col in colunas_selecionadas:
+                val = item
+                # Navega por atributos aninhados (Ex: entra no paciente e pega o nome)
+                for part in col.split('.'):
+                    val = getattr(val, part, 'N/A') if val else 'N/A'
+                
+                # Tratamento visual para moeda, se necessário
+                if col == 'investimento_estimado' and val != 'N/A':
+                    linha.append(f"R$ {val}")
+                else:
+                    linha.append(str(val) if val != None else '-')
+            ws.append(linha)
+
+        # Ajuste automático da largura das colunas do Excel
+        for col in ws.columns:
+            max_length = 0
+            col_letter = col[0].column_letter # Ex: 'A', 'B'
+            for cell in col:
+                try:
+                    if cell.value and len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            # Dá margem de respiro ao texto na célula
+            ws.column_dimensions[col_letter].width = max_length + 2
+
+        # Salva o arquivo final na memória
+        out = io.BytesIO()
+        wb.save(out)
+        out.seek(0)
+
+        # ==========================================
+        # 6. NOMENCLATURA E ENVIO AO NAVEGADOR
+        # ==========================================
+        id_relatorio = uuid.uuid4().hex[:4].upper()
+        data_emissao = datetime.now().strftime('%d%m%Y_%H%M')
+        nome_arquivo = f"{id_relatorio}_{data_emissao}_{tabela.capitalize()}.xlsx"
+
+        output = make_response(out.getvalue())
+        output.headers["Content-Disposition"] = f"attachment; filename={nome_arquivo}"
+        output.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        
+        return output
+
+    # Retorno Padrão (Entrada Inicial na Página)
+    return render_template('crm/relatorios.html', mapa=MAPA_CAMPOS, resultados=None)
 
 @app.route('/logout')
 def logout():

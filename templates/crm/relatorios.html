@@ -1,0 +1,98 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+<div class="p-10" x-data="{ tabela: 'acolhimentos' }">
+    <header class="mb-10">
+        <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Report Builder</h1>
+        <p class="text-slate-500 font-medium">Selecione as dimensões e métricas para análise.</p>
+    </header>
+
+    <form method="POST" class="grid grid-cols-12 gap-10">
+        <div class="col-span-4 space-y-6">
+            <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">1. Objeto Principal</label>
+                <select name="tabela" x-model="tabela" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-elo-blue">
+                    <option value="acolhimentos">Acolhimentos (Oportunidades)</option>
+                    <option value="tarefas">Atividades (Tarefas)</option>
+                </select>
+
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mt-8 mb-4">2. Colunas do Relatório</label>
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                    {% for tab, campos in mapa.items() %}
+                        <div x-show="tabela == '{{ tab }}'" class="space-y-2">
+                            {% for key, label in campos.items() %}
+                            <label class="flex items-center p-3 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition">
+                                <input type="checkbox" name="colunas" value="{{ key }}" checked class="w-5 h-5 rounded text-elo-blue">
+                                <span class="ml-3 text-sm font-bold text-slate-700">{{ label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mt-8 mb-4">3. Filtros Rápidos</label>
+                <select name="filtro_status" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none">
+                    <option value="">Todos os Status</option>
+                    <option value="Novo">Novo</option>
+                    <option value="Internado (Ganho)">Internado (Ganho)</option>
+                </select>
+
+                <div class="mt-10 pt-6 border-t border-slate-100 space-y-3">
+                    <button type="submit" name="exportar" value="false" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition">
+                        PRÉ-VISUALIZAR
+                    </button>
+                    <button type="submit" name="exportar" value="true" class="w-full py-4 bg-green-600 text-white rounded-2xl font-black hover:bg-green-700 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> EXPORTAR EXCEL
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-8">
+            {% if resultados %}
+            <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-black text-slate-900">Resultados da Consulta ({{ resultados|length }})</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                {% for col in colunas %}
+                                <th class="px-6 py-4">{{ mapa[tabela_ativa][col] }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for item in resultados %}
+                            <tr class="hover:bg-blue-50/30 transition text-sm">
+                                {% for col in colunas %}
+                                <td class="px-6 py-4 font-medium text-slate-600">
+                                    {% set ns = namespace(valor=item) %}
+                                    
+                                    {% for part in col.split('.') %}
+                                        {% if ns.valor %}
+                                            {% set ns.valor = ns.valor|attr(part) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {{ ns.valor if ns.valor != None else '-' }}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="h-full border-4 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center text-slate-300 p-20 text-center">
+                <i class="fa-solid fa-chart-pie text-6xl mb-6"></i>
+                <p class="text-xl font-black">Configure seu relatório à esquerda</p>
+                <p class="text-sm font-medium mt-2">Escolha a tabela e as colunas que deseja analisar.</p>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}
