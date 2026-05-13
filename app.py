@@ -11,6 +11,8 @@ import io
 import uuid
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
+from werkzeug.utils import secure_filename
+
 
 
 load_dotenv()
@@ -19,6 +21,11 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'elo-secret-123')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configuração de Upload (Crie a pasta 'uploads' no seu projeto)
+UPLOAD_FOLDER = 'static/uploads/chamados'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -114,6 +121,18 @@ class Atividade(db.Model):
 def load_user(user_id):
     return db.session.get(Usuario, int(user_id))
 
+class Chamado(db.Model):
+    __tablename__ = 'chamado'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    tipo = db.Column(db.String(50)) # Bug, Sugestão, Outros
+    assunto = db.Column(db.String(100))
+    descricao = db.Column(db.Text)
+    anexo = db.Column(db.String(255))
+    status = db.Column(db.String(20), default='Aberto') # Aberto, Em Análise, Resolvido
+    data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    usuario = db.relationship('Usuario', backref='chamados')
 
 # ==========================================
 # 2. ROTAS INSTITUCIONAIS (PÚBLICO)
@@ -600,6 +619,43 @@ def relatorios():
 
     # Retorno Padrão (Entrada Inicial na Página)
     return render_template('crm/relatorios.html', mapa=MAPA_CAMPOS, resultados=None)
+
+# --- ROTAS DE CHAMADOS ---
+@app.route('/workbench/chamados')
+@login_required
+def chamados():
+    if current_user.role == 'admin':
+        meus_chamados = Chamado.query.order_by(Chamado.data_creacao.desc()).all()
+    else:
+        meus_chamados = Chamado.query.filter_by(usuario_id=current_user.id).order_by(Chamado.data_criacao.desc()).all()
+    return render_template('crm/chamados.html', chamados=meus_chamados)
+
+@app.route('/workbench/chamados/novo', methods=['POST'])
+@login_required
+def novo_chamado():
+    arquivo = request.files.get('anexo')
+    nome_arquivo = None
+    
+    if arquivo and arquivo.filename != '':
+        nome_arquivo = secure_filename(f"{uuid.uuid4().hex[:8]}_{arquivo.filename}")
+        arquivo.save(os.path.join(app.config['UPLOAD_FOLDER'], nome_arquivo))
+
+    novo = Chamado(
+        usuario_id = current_user.id,
+        tipo = request.form.get('tipo'),
+        assunto = request.form.get('assunto'),
+        descricao = request.form.get('descricao'),
+        anexo = nome_arquivo
+    )
+    db.session.add(novo)
+    db.session.commit()
+    return redirect(url_for('chamados'))
+
+# --- ROTA DE CONFIGURAÇÕES ---
+@app.route('/workbench/configuracoes')
+@login_required
+def configuracoes():
+    return render_template('crm/configuracoes.html')
 
 @app.route('/logout')
 def logout():

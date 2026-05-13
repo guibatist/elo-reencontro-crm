@@ -1,0 +1,73 @@
+{% extends 'crm/base.html' %}
+{% block content %}
+<div class="p-10" x-data="{ openModal: false }">
+    <header class="flex justify-between items-center mb-10">
+        <div>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Central de Suporte</h1>
+            <p class="text-slate-500 font-medium">Relate problemas ou sugira melhorias na plataforma.</p>
+        </div>
+        <button @click="openModal = true" class="bg-elo-navy text-white px-8 py-4 rounded-2xl font-black hover:bg-elo-blue transition shadow-lg">
+            ABRIR NOVO CHAMADO
+        </button>
+    </header>
+
+    <div class="grid grid-cols-1 gap-4">
+        {% for c in chamados %}
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center {% if c.status == 'Aberto' %} bg-orange-100 text-orange-600 {% elif c.status == 'Resolvido' %} bg-green-100 text-green-600 {% else %} bg-blue-100 text-blue-600 {% endif %}">
+                    <i class="fa-solid {% if c.tipo == 'Bug' %} fa-bug {% else %} fa-lightbulb {% endif %}"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-900">{{ c.assunto }}</h3>
+                    <p class="text-xs text-slate-500">{{ c.data_criacao.strftime('%d/%m/%Y %H:%M') }} • ID #{{ c.id }}</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-8">
+                <span class="px-4 py-1 rounded-full text-[10px] font-black uppercase border {% if c.status == 'Aberto' %} border-orange-200 text-orange-600 {% else %} border-green-200 text-green-600 {% endif %}">
+                    {{ c.status }}
+                </span>
+                {% if c.anexo %}
+                <a href="/static/uploads/chamados/{{ c.anexo }}" target="_blank" class="text-slate-400 hover:text-elo-blue transition">
+                    <i class="fa-solid fa-paperclip text-xl"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-10 shadow-2xl" @click.away="openModal = false">
+            <h2 class="text-2xl font-black text-slate-900 mb-6">Como podemos ajudar?</h2>
+            <form action="/workbench/chamados/novo" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">Tipo</label>
+                    <select name="tipo" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                        <option value="Bug">Problema na Plataforma (Bug)</option>
+                        <option value="Sugestão">Sugestão de Melhoria</option>
+                        <option value="Outros">Dúvidas / Outros</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">Assunto Rápido</label>
+                    <input type="text" name="assunto" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">Descrição Detalhada</label>
+                    <textarea name="descricao" rows="4" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-400 uppercase mb-2">Anexo (Print/PDF)</label>
+                    <input type="file" name="anexo" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-elo-navy file:text-white hover:file:bg-elo-blue">
+                </div>
+                <div class="pt-6 flex gap-4">
+                    <button type="button" @click="openModal = false" class="flex-1 py-4 font-bold text-slate-500">Cancelar</button>
+                    <button type="submit" class="flex-1 py-4 bg-elo-navy text-white rounded-2xl font-black">ENVIAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

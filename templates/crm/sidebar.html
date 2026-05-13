@@ -24,9 +24,9 @@
                 <template x-for="item in [
                     { name: 'Dashboard', icon: 'fa-chart-pie', url: '/workbench/dashboard' },
                     { name: 'Acolhimentos', icon: 'fa-address-book', url: '/workbench/acolhimentos' },
-                    { name: 'Calendário', icon: 'fa-calendar-days', url: '/workbench/calendario' },
                     { name: 'Tarefas', icon: 'fa-list-check', url: '/workbench/tarefas' },
-                    { name: 'Relatórios', icon: 'fa-file-contract', url: '/workbench/relatorios' }
+                    { name: 'Relatórios', icon: 'fa-file-contract', url: '/workbench/relatorios' },
+                    { name: 'Suporte', icon: 'fa-headset', url: '/workbench/chamados' }
                 ]">
                     <a :href="item.url" 
                        class="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 group relative"
