@@ -1,64 +1,109 @@
 {% extends 'crm/base.html' %}
+
+{% block title %}Configurações | Elo Workbench{% endblock %}
+
 {% block content %}
-<div class="p-10 space-y-10" x-data="{ userEdit: null }">
-    <header>
-        <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Governança</h1>
-        <p class="text-slate-500 font-medium">Gestão central de utilizadores e acessos ao CRM.</p>
-    </header>
+<div class="p-10 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto space-y-10">
+        
+        <header class="flex justify-between items-end">
+            <div>
+                <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Painel de Controle</h1>
+                <p class="text-slate-500 font-medium">Gerencie acessos, permissões e segurança da equipe.</p>
+            </div>
+            <form action="/api/usuarios/reset-total" method="POST" onsubmit="return confirm('Deseja resetar a senha de TODOS os consultores?')">
+                <button type="submit" class="bg-red-50 text-red-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm">
+                    ⚠️ Resetar Senhas da Equipe
+                </button>
+            </form>
+        </header>
 
-    {% if current_user.role == 'admin' %}
-    <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-        <table class="w-full text-left">
-            <thead>
-                <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <th class="px-8 py-5">Consultor</th>
-                    <th class="px-8 py-5">E-mail</th>
-                    <th class="px-8 py-5">Status</th>
-                    <th class="px-8 py-5 text-right">Ações</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                {% for u in usuarios %}
-                <tr class="hover:bg-slate-50/80 transition">
-                    <td class="px-8 py-5 font-bold text-slate-900">{{ u.nome }}</td>
-                    <td class="px-8 py-5 text-slate-500">{{ u.email }}</td>
-                    <td class="px-8 py-5">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase {{ 'bg-green-100 text-green-600' if u.is_active else 'bg-red-100 text-red-600' }}">
-                            {{ 'Ativo' if u.is_active else 'Bloqueado' }}
-                        </span>
-                    </td>
-                    <td class="px-8 py-5 text-right">
-                        <button @click="userEdit = { id: '{{u.id}}', nome: '{{u.nome}}', email: '{{u.email}}', active: {{ 'true' if u.is_active else 'false' }} }" 
-                                class="text-elo-blue font-black hover:underline">GERIR</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
-
-    <div x-show="userEdit" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl" @click.away="userEdit = null">
-            <h2 class="text-2xl font-black text-slate-900 mb-6">Editar Consultor</h2>
-            <form :action="'/api/usuarios/' + userEdit.id + '/editar'" method="POST" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Nome Completo</label>
-                    <input type="text" name="nome" x-model="userEdit.nome" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+        <div class="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest">Novo Consultor</h2>
+            </div>
+            
+            <form action="/api/usuarios/novo" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome</label>
+                    <input type="text" name="nome" required class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold focus:ring-2 focus:ring-blue-100 transition-all">
                 </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">E-mail de Acesso</label>
-                    <input type="email" name="email" x-model="userEdit.email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sobrenome</label>
+                    <input type="text" name="sobrenome" required class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold focus:ring-2 focus:ring-blue-100 transition-all">
                 </div>
-                <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer">
-                    <input type="checkbox" name="is_active" :checked="userEdit.active" class="w-5 h-5 text-elo-blue border-slate-300 rounded">
-                    <span class="text-sm font-bold text-slate-700">Utilizador Ativo (Permitir Login)</span>
-                </label>
-                <div class="pt-6 flex gap-3">
-                    <button type="button" @click="userEdit = null" class="flex-1 py-4 font-bold text-slate-500">Cancelar</button>
-                    <button type="submit" class="flex-1 py-4 bg-elo-navy text-white rounded-2xl font-black">SALVAR</button>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
+                    <input type="email" name="email" required class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold focus:ring-2 focus:ring-blue-100 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Acesso</label>
+                    <select name="role" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold focus:ring-2 focus:ring-blue-100 transition-all appearance-none">
+                        <option value="consultor">Consultor</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div class="md:col-span-4">
+                    <button type="submit" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-slate-900 transition-all shadow-lg shadow-blue-200 uppercase tracking-widest text-xs">
+                        Gerar Acesso e Enviar Convite
+                    </button>
                 </div>
             </form>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Agente</th>
+                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">E-mail & Cadastro</th>
+                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
+                        <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Gestão</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for u in usuarios %}
+                    <tr class="group hover:bg-slate-50/50 transition-all">
+                        <td class="px-8 py-6">
+                            <form action="/api/usuarios/{{ u.id }}/editar" method="POST" class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                    {{ u.nome[0] }}
+                                </div>
+                                <input type="text" name="nome" value="{{ u.nome }}" class="bg-transparent border-none font-bold text-slate-900 focus:ring-0 p-0 w-32">
+                            </form>
+                        </td>
+                        <td class="px-8 py-6">
+                            <form action="/api/usuarios/{{ u.id }}/editar" method="POST" class="flex flex-col">
+                                <input type="email" name="email" value="{{ u.email }}" class="bg-transparent border-none font-medium text-slate-500 focus:ring-0 p-0 text-sm">
+                                <span class="text-[9px] font-black text-slate-300 uppercase tracking-tighter">Username: {{ u.user_key }}</span>
+                                <button type="submit" class="hidden group-hover:block text-[9px] font-black text-blue-600 uppercase mt-1 text-left">Salvar Alterações</button>
+                            </form>
+                        </td>
+                        <td class="px-8 py-6">
+                            <form action="/api/usuarios/{{ u.id }}/editar" method="POST">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="is_active" class="sr-only peer" {% if u.is_active %}checked{% endif %} onchange="this.form.submit()">
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span class="ml-3 text-[10px] font-black uppercase {% if u.is_active %}text-blue-600{% else %}text-slate-400{% endif %}">
+                                        {% if u.is_active %}Ativo{% else %}Inativo{% endif %}
+                                    </span>
+                                </label>
+                            </form>
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <div class="flex justify-end gap-2">
+                                <form action="/api/usuarios/{{ u.id }}/reset-senha" method="POST">
+                                    <button type="submit" class="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-orange-100 hover:text-orange-600 transition-all" title="Resetar Senha">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

@@ -268,35 +268,12 @@
 
             <div class="bg-white border border-slate-100 rounded-3xl shadow-sm p-8">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Anexos (RG e Laudos)</h2>
-                    <span class="w-6 h-6 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-[10px] font-black">
-                        {{ ac.anexos | length if ac.anexos else 0 }}
-                    </span>
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Anexos</h2>
+                    <span class="w-6 h-6 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-[10px] font-black">0</span>
                 </div>
-
-                <form action="/api/acolhimento/{{ ac.id }}/anexo" method="POST" enctype="multipart/form-data" id="formAnexo" class="mb-6">
-                    <label class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50/50 hover:bg-slate-50 hover:border-elo-blue transition cursor-pointer block group">
-                        <input type="file" name="arquivo" class="hidden" onchange="document.getElementById('formAnexo').submit()">
-                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 group-hover:text-elo-blue mb-2 transition"></i>
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Enviar Documento</p>
-                        <p class="text-[9px] text-slate-400 mt-1 italic">PDF, JPG ou PNG</p>
-                    </label>
-                </form>
-
-                <div x-data="{ uploadModal: false }" class="bg-white border border-slate-100 rounded-3xl shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Documentação</h2>
-                        <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black">
-                            {{ ac.anexos | length if ac.anexos else 0 }}
-                        </span>
-                    </div>
-                    
-                    <button @click="uploadModal = true" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-elo-blue transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-folder-open text-sm"></i>
-                        Gerenciar Anexos
-                    </button>
-
-                    {% include 'crm/modal_anexos.html' %}
+                <div class="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 mb-2"></i>
+                    <p class="text-xs font-bold text-slate-500">Clique para enviar RG e Laudos</p>
                 </div>
             </div>
         </div>

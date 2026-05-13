@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash, make_response
+from flask import Flask, render_template, redirect, url_for, request, flash, make_response, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -12,8 +12,9 @@ import uuid
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from werkzeug.utils import secure_filename
-
-
+import random
+import string
+from flask_mail import Mail, Message
 
 load_dotenv()
 
@@ -22,10 +23,28 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'elo-secret-123')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# No bloco de configurações de e-mail do seu app.py
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USER')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASS')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USER') 
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+mail = Mail(app)
+
 # Configuração de Upload (Crie a pasta 'uploads' no seu projeto)
 UPLOAD_FOLDER = 'static/uploads/chamados'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Configuração (Adicione no topo do app.py)
+app.config['UPLOAD_FOLDER'] = 'uploads/anexos'
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -46,6 +65,10 @@ class Usuario(UserMixin, db.Model):
     user_key = db.Column(db.String(100), unique=True, nullable=False)
     role = db.Column(db.String(20), default='consultor')
     is_active = db.Column(db.Boolean, default=True)
+    data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    precisa_mudar_senha = db.Column(db.Boolean, default=True) 
+    codigo_verificacao = db.Column(db.String(6))
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def gerar_username(self):
@@ -102,7 +125,7 @@ class Acolhimento(db.Model):
     paciente = db.relationship('Paciente', backref='acolhimentos')
     decisor = db.relationship('Decisor', backref='acolhimentos')
     agente = db.relationship('Usuario', backref='meus_acolhimentos')
-
+    anexos = db.relationship('Anexo', backref='acolhimento', lazy=True)
     # Relação com tarefas
     tarefas = db.relationship('Tarefa', backref='acolhimento', order_by='Tarefa.data_vencimento.asc()')
 
@@ -148,6 +171,16 @@ class Chamado(db.Model):
     
     usuario = db.relationship('Usuario', backref='chamados')
 
+class Anexo(db.Model):
+    __tablename__ = 'anexos' # Nome da tabela no banco
+    id = db.Column(db.Integer, primary_key=True)
+    nome_original = db.Column(db.String(255), nullable=False)
+    caminho = db.Column(db.String(255), nullable=False)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # AJUSTE AS STRINGS ABAIXO PARA O NOME REAL DAS TABELAS NO SQL
+    acolhimento_id = db.Column(db.Integer, db.ForeignKey('acolhimentos.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
 # ==========================================
 # 2. ROTAS INSTITUCIONAIS (PÚBLICO)
 # ==========================================
@@ -323,24 +356,57 @@ def concluir_tarefa(id):
 def workbench_index():
     return redirect(url_for('login'))
 
+# 1. Funções Auxiliares
+def gerar_senha_inicial(sobrenome):
+    numeros = ''.join(random.choices(string.digits, k=5))
+    return f"{numeros}{sobrenome.capitalize()}"
+
+def gerar_codigo_2fa():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Agora o backend lê EXATAMENTE o que o seu HTML envia
-        username_login = request.form.get('username')
-        senha_digitada = request.form.get('password') # <-- O erro estava aqui
-
-        if not username_login or not senha_digitada:
-            return "Por favor, preencha todos os campos.", 400
+        username_input = request.form.get('username').lower().strip()
+        senha_input = request.form.get('password')
         
-        user = Usuario.query.filter_by(user_key=username_login.lower().strip()).first()
+        user = Usuario.query.filter_by(user_key=username_input).first()
         
-        if user and check_password_hash(user.senha, senha_digitada):
+        if user and check_password_hash(user.senha, senha_input):
             login_user(user)
-            return redirect(url_for('dashboard'))
             
-        return "Usuário ou senha inválidos", 401
+            # Se for o primeiro acesso ou reset, envia código 2FA
+            if user.precisa_mudar_senha:
+                user.codigo_verificacao = gerar_codigo_2fa()
+                db.session.commit()
+                
+                # DISPARO DO E-MAIL MARKETING DE SEGURANÇA (HTML)
+                try:
+                    msg = Message(
+                        subject=f"CÓDIGO: {user.codigo_verificacao} - Verificação Elo",
+                        sender=app.config['MAIL_DEFAULT_SENDER'],
+                        recipients=[user.email]
+                    )
+                    
+                    # Carrega o HTML com o design de elite
+                    msg.html = render_template('emails/codigo_seguranca.html', 
+                                               nome=user.nome, 
+                                               codigo=user.codigo_verificacao)
+                    
+                    mail.send(msg)
+                    print(f"✅ Código de segurança enviado para {user.email}")
+                    
+                except Exception as e:
+                    print(f"❌ Erro ao enviar e-mail de segurança: {str(e)}")
+                    flash("Erro ao enviar código de segurança. Tente novamente.", "error")
+                    return redirect(url_for('login'))
+                
+                return redirect(url_for('verificar_2fa'))
+            
+            return redirect(url_for('dashboard'))
         
+        flash("Credenciais inválidas.", "error")
+    
     return render_template('crm/login.html')
 
 @app.route('/workbench/dashboard')
@@ -667,11 +733,68 @@ def novo_chamado():
 @app.route('/workbench/configuracoes')
 @login_required
 def configuracoes():
-    usuarios = []
-    if getattr(current_user, 'role', 'consultor') == 'admin':
-        usuarios = Usuario.query.all() # Admin vê a lista de gestão
+    if current_user.role != 'admin':
+        flash("Acesso restrito a administradores.", "error")
+        return redirect(url_for('dashboard'))
     
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('crm/configuracoes.html', usuarios=usuarios)
+
+@app.route('/api/usuarios/novo', methods=['POST'])
+@login_required
+def criar_usuario():
+    if current_user.role != 'admin': return "Acesso Negado", 403
+    
+    nome = request.form.get('nome')
+    sobrenome = request.form.get('sobrenome')
+    email = request.form.get('email')
+    
+    # Lógica de Senha Inicial (5 números + Sobrenome)
+    senha_temp = gerar_senha_inicial(sobrenome)
+    
+    novo_user = Usuario(
+        nome=nome,
+        sobrenome=sobrenome,
+        email=email,
+        senha=generate_password_hash(senha_temp),
+        role=request.form.get('role', 'consultor'),
+        precisa_mudar_senha=True,
+        is_active=True
+    )
+    novo_user.user_key = novo_user.gerar_username()
+    
+    db.session.add(novo_user)
+    db.session.commit()
+
+    # Envio do E-mail Marketing de Convite
+    try:
+        msg = Message("Bem-vindo à Elo - Suas Credenciais", recipients=[email])
+        msg.html = render_template('emails/boas_vindas.html', 
+                                   nome=nome, 
+                                   user_key=novo_user.user_key, 
+                                   senha_temporaria=senha_temp)
+        mail.send(msg)
+        flash(f"Usuário {nome} criado e convite enviado!", "success")
+    except Exception as e:
+        flash(f"Usuário criado, mas erro ao enviar e-mail: {e}", "warning")
+
+    return redirect(url_for('configuracoes'))
+
+@app.route('/api/usuarios/<int:id>/editar', methods=['POST'])
+@login_required
+def editar_usuario(id):
+    if current_user.role != 'admin': return "Acesso Negado", 403
+    
+    user = db.session.get(Usuario, id)
+    user.nome = request.form.get('nome')
+    user.email = request.form.get('email')
+    
+    # Lógica do Toggle Ativo/Inativo (Checkbox HTML)
+    user.is_active = 'is_active' in request.form
+    
+    db.session.commit()
+    flash("Alterações salvas com sucesso!", "success")
+    return redirect(url_for('configuracoes'))
 
 # Rota para Bloquear/Editar (Apenas Admin)
 @app.route('/workbench/configuracoes/usuario/<int:id>/status', methods=['POST'])
@@ -686,49 +809,140 @@ def alterar_status_usuario(id):
     db.session.commit()
     return redirect(url_for('configuracoes'))
 
-# --- API: EDITAR UTILIZADOR (EMAIL E STATUS) ---
-@app.route('/api/usuarios/<int:id>/editar', methods=['POST'])
+@app.route('/verificar-2fa', methods=['GET', 'POST'])
 @login_required
-def editar_usuario(id):
-    if current_user.role != 'admin':
-        return "Acesso Negado", 403
+def verificar_2fa():
+    if request.method == 'POST':
+        codigo = request.form.get('codigo').upper()
+        nova_senha = request.form.get('nova_senha')
+        confirmar = request.form.get('confirmar_senha')
         
-    user = db.session.get(Usuario, id)
-    user.email = request.form.get('email')
-    user.nome = request.form.get('nome')
-    # Toggle de Ativo/Inativo
-    user.is_active = 'is_active' in request.form 
-    
-    db.session.commit()
-    return redirect(url_for('configuracoes'))
+        if codigo == current_user.codigo_verificacao:
+            if nova_senha == confirmar and len(nova_senha) >= 8:
+                current_user.senha = generate_password_hash(nova_senha)
+                current_user.precisa_mudar_senha = False
+                current_user.codigo_verificacao = None
+                db.session.commit()
+                flash("Senha atualizada com sucesso!", "success")
+                return redirect(url_for('dashboard'))
+            else:
+                flash("As senhas não coincidem ou são muito curtas.", "error")
+        else:
+            flash("Código de verificação inválido.", "error")
+            
+    return render_template('crm/verificar_2fa.html')
 
-@app.route('/api/usuarios/novo', methods=['POST'])
+@app.route('/api/usuarios/reset-total', methods=['POST'])
 @login_required
-def criar_usuario():
-    if current_user.role != 'admin':
-        return "Acesso Negado", 403
+def reset_total():
+    if current_user.role != 'admin': return "Acesso Negado", 403
     
-    novo_user = Usuario(
-        nome=request.form.get('nome'),
-        sobrenome=request.form.get('sobrenome'),
-        email=request.form.get('email'),
-        senha=generate_password_hash(request.form.get('senha')),
-        role=request.form.get('role', 'consultor')
-    )
-    
-    # Gera a user_key automaticamente (joao.almeida)
-    novo_user.user_key = novo_user.gerar_username()
-    
-    # Verifica se já existe esse username (evita duplicidade)
-    tentativas = 1
-    original_key = novo_user.user_key
-    while Usuario.query.filter_by(user_key=novo_user.user_key).first():
-        novo_user.user_key = f"{original_key}{tentativas}"
-        tentativas += 1
-
-    db.session.add(novo_user)
+    usuarios = Usuario.query.filter(Usuario.role != 'admin').all()
+    for u in usuarios:
+        # Reset Total: 5 números + Nome (conforme solicitado)
+        nums = ''.join(random.choices(string.digits, k=5))
+        senha_reset = f"{nums}{u.nome.capitalize()}"
+        
+        u.senha = generate_password_hash(senha_reset)
+        u.precisa_mudar_senha = True
+        
+        # Enviar e-mail simples de aviso
+        msg = Message("Alerta de Segurança - Reset de Senha", recipients=[u.email])
+        msg.body = f"Todas as senhas foram resetadas pelo admin. Sua nova senha: {senha_reset}"
+        mail.send(msg)
+        
     db.session.commit()
+    flash("Toda a equipe foi resetada!", "success")
     return redirect(url_for('configuracoes'))
+
+@app.route('/api/usuarios/<int:id>/reset-senha', methods=['POST'])
+@login_required
+def resetar_senha_usuario(id):
+    if current_user.role != 'admin': return "Acesso Negado", 403
+    
+    user = db.session.get(Usuario, id)
+    # Reset Individual: 5 números + Sobrenome
+    nova_senha = gerar_senha_inicial(user.sobrenome)
+    
+    user.senha = generate_password_hash(nova_senha)
+    user.precisa_mudar_senha = True
+    db.session.commit()
+    
+    # E-mail de Notificação de Reset
+    try:
+        msg = Message("Sua Senha Elo foi Resetada", recipients=[user.email])
+        msg.body = f"Olá {user.nome}, sua nova senha temporária é: {nova_senha}"
+        mail.send(msg)
+        flash(f"Senha de {user.nome} resetada!", "success")
+    except Exception as e:
+        flash("Senha resetada no banco, mas erro no e-mail.", "error")
+        
+    return redirect(url_for('configuracoes'))
+
+@app.route('/api/acolhimento/<int:id>/anexo', methods=['POST'])
+@login_required
+def upload_anexo(id):
+    if 'arquivo' not in request.files:
+        # CORREÇÃO AQUI: de 'detalhes_acolhimento' para 'ver_acolhimento'
+        return redirect(url_for('ver_acolhimento', id=id))
+    
+    file = request.files['arquivo']
+    if file.filename == '':
+        return redirect(url_for('ver_acolhimento', id=id))
+
+    if file:
+        filename = secure_filename(file.filename)
+        unique_name = f"{int(datetime.now().timestamp())}_{filename}"
+        
+        if not os.path.exists(app.config['UPLOAD_FOLDER']):
+            os.makedirs(app.config['UPLOAD_FOLDER'])
+            
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
+
+        novo_anexo = Anexo(
+            nome_original=filename,
+            caminho=unique_name,
+            acolhimento_id=id,
+            usuario_id=current_user.id
+        )
+        db.session.add(novo_anexo)
+        db.session.commit()
+        
+        # Opcional: Garante que a sessão está limpa para a próxima leitura
+        db.session.expire_all() 
+        
+        flash("Documento anexado!", "success")
+    return redirect(url_for('ver_acolhimento', id=id))
+
+@app.route('/uploads/anexos/<filename>')
+@login_required
+def custom_static(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/api/anexo/<int:id>/deletar', methods=['POST'])
+@login_required
+def deletar_anexo(id):
+    anexo = Anexo.query.get_or_404(id)
+    id_acolhimento = anexo.acolhimento_id
+    
+    try:
+        # 1. Tenta apagar o arquivo físico da pasta uploads
+        caminho_arquivo = os.path.join(app.config['UPLOAD_FOLDER'], anexo.caminho)
+        if os.path.exists(caminho_arquivo):
+            os.remove(caminho_arquivo)
+            
+        # 2. Apaga o registro no banco de dados Neon
+        db.session.delete(anexo)
+        db.session.commit()
+        flash("Arquivo removido com sucesso!", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao deletar: {e}")
+        flash("Não foi possível remover o arquivo físico.", "error")
+
+    # 3. Redireciona para a página do paciente (ver_acolhimento)
+    return redirect(url_for('ver_acolhimento', id=id_acolhimento))
 
 @app.route('/logout')
 def logout():
