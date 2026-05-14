@@ -3,19 +3,21 @@
 {% block title %}Meu Perfil | Elo Workbench{% endblock %}
 
 {% block content %}
-<header class="bg-white border-b border-slate-200 px-10 py-10">
-    <div class="flex items-center gap-8">
-        <div class="relative">
-            <div class="w-32 h-32 bg-elo-light rounded-3xl flex items-center justify-center text-elo-navy text-4xl font-black shadow-inner">
+
+{# ── HEADER DO PERFIL ── #}
+<header class="bg-white border-b border-slate-200 px-10 py-10 header-perfil">
+    <div class="flex items-center gap-8 perfil-topo">
+        <div class="relative flex-shrink-0">
+            <div class="w-32 h-32 avatar-principal bg-elo-light rounded-3xl flex items-center justify-center text-elo-navy text-4xl font-black shadow-inner">
                 {{ user.nome[0] }}
             </div>
             <div class="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-white shadow-sm" title="Online"></div>
         </div>
 
-        <div>
-            <h1 class="text-4xl font-black text-slate-950 tracking-tighter">{{ user.nome }}</h1>
-            <p class="text-lg text-slate-500 mt-1 font-medium">Consultor de Acolhimento • Unidade Central</p>
-            <div class="flex gap-3 mt-4">
+        <div class="perfil-info">
+            <h1 class="text-4xl font-black text-slate-950 tracking-tighter nome-usuario">{{ user.nome }}</h1>
+            <p class="text-lg text-slate-500 mt-1 font-medium cargo-usuario">Consultor de Acolhimento • Unidade Central</p>
+            <div class="flex gap-3 mt-4 flex-wrap badges-perfil">
                 <span class="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-xs font-bold uppercase tracking-wider">ID: #{{ user.id }}</span>
                 <span class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold uppercase tracking-wider italic">Membro desde {{ user.data_cadastro }}</span>
             </div>
@@ -23,42 +25,43 @@
     </div>
 </header>
 
-<div class="p-10">
-    <div class="grid grid-cols-12 gap-10">
-        
-        <div class="col-span-4 space-y-8">
+<div class="p-10 container-perfil">
+    <div class="grid grid-cols-12 gap-10 grid-perfil">
+
+        {# ── COLUNA ESQUERDA ── #}
+        <div class="col-span-4 space-y-8 coluna-lateral">
+
+            {# Informações Pessoais #}
             <div class="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm">
                 <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
                     <i class="fa-solid fa-id-card text-elo-blue"></i>
                     Informações Pessoais
                 </h2>
-                
                 <div class="space-y-6">
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">E-mail Corporativo</label>
-                        <div class="flex items-center gap-3 text-slate-700 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <i class="fa-solid fa-envelope text-slate-300"></i>
-                            {{ user.email }}
+                        <div class="flex items-center gap-3 text-slate-700 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100 overflow-hidden">
+                            <i class="fa-solid fa-envelope text-slate-300 flex-shrink-0"></i>
+                            <span class="truncate">{{ user.email }}</span>
                         </div>
                     </div>
-
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Telefone / WhatsApp</label>
                         <div class="flex items-center gap-3 text-slate-700 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <i class="fa-solid fa-phone text-slate-300"></i>
+                            <i class="fa-solid fa-phone text-slate-300 flex-shrink-0"></i>
                             {{ user.telefone }}
                         </div>
                     </div>
-
                     <div class="bg-orange-50 border border-orange-100 p-4 rounded-2xl">
                         <p class="text-xs text-orange-700 leading-relaxed font-medium">
-                            <i class="fa-solid fa-circle-info mr-1"></i> 
+                            <i class="fa-solid fa-circle-info mr-1"></i>
                             Para alterar contatos, abra um chamado no TI.
                         </p>
                     </div>
                 </div>
             </div>
 
+            {# Performance #}
             <div class="bg-elo-navy rounded-[2rem] p-8 text-white shadow-xl shadow-elo-navy/20">
                 <h2 class="text-xl font-black mb-6">Sua Performance</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -82,33 +85,38 @@
                     </div>
                 </div>
             </div>
-        </div> <div class="col-span-8" id="calendar-container">
-            <div class="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[750px] transition-opacity duration-300" id="calendar-box">
-                
-                <div class="p-10 border-b border-slate-100 flex items-center justify-between bg-white">
+        </div>
+
+        {# ── COLUNA DIREITA — CALENDÁRIO ── #}
+        <div class="col-span-8 coluna-calendario" id="calendar-container">
+            <div class="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[750px] transition-opacity duration-300 calendar-box-wrapper" id="calendar-box">
+
+                {# Cabeçalho do calendário #}
+                <div class="p-10 border-b border-slate-100 flex items-center justify-between bg-white calendar-header">
                     <div>
-                        <h2 class="text-3xl font-black text-slate-900 tracking-tighter">Minha Agenda</h2>
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tighter titulo-agenda">Minha Agenda</h2>
                         <p class="text-sm text-slate-500 font-medium">Gestão de retornos e compromissos.</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <button data-url="?mes={{ mes - 1 }}&ano={{ ano }}" class="calendar-nav w-12 h-12 hover:bg-slate-50 rounded-2xl transition border border-slate-100 flex items-center justify-center text-slate-600">
+                    <div class="flex items-center gap-4 nav-calendario">
+                        <button data-url="?mes={{ mes - 1 }}&ano={{ ano }}"
+                                class="calendar-nav w-12 h-12 hover:bg-slate-50 rounded-2xl transition border border-slate-100 flex items-center justify-center text-slate-600">
                             <i class="fa-solid fa-chevron-left pointer-events-none"></i>
                         </button>
-                        
-                        <div class="px-8 py-3 bg-slate-900 rounded-2xl font-black text-sm text-white flex items-center justify-center min-w-[180px] shadow-lg shadow-slate-200">
+                        <div class="px-8 py-3 bg-slate-900 rounded-2xl font-black text-sm text-white flex items-center justify-center min-w-[180px] shadow-lg shadow-slate-200 label-mes">
                             {{ nome_mes }} {{ ano }}
                         </div>
-                        
-                        <button data-url="?mes={{ mes + 1 }}&ano={{ ano }}" class="calendar-nav w-12 h-12 hover:bg-slate-50 rounded-2xl transition border border-slate-100 flex items-center justify-center text-slate-600">
+                        <button data-url="?mes={{ mes + 1 }}&ano={{ ano }}"
+                                class="calendar-nav w-12 h-12 hover:bg-slate-50 rounded-2xl transition border border-slate-100 flex items-center justify-center text-slate-600">
                             <i class="fa-solid fa-chevron-right pointer-events-none"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="flex-1 p-8 bg-slate-50/50">
-                    <div class="grid grid-cols-7 gap-3 h-full">
+                {# Grade do calendário #}
+                <div class="flex-1 p-8 bg-slate-50/50 area-grade">
+                    <div class="grid grid-cols-7 gap-3 h-full grade-calendario">
                         {% for dia in ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] %}
-                        <div class="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest pb-4">
+                        <div class="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest pb-4 label-dia">
                             {{ dia }}
                         </div>
                         {% endfor %}
@@ -116,16 +124,15 @@
                         {% for semana in cal %}
                             {% for dia in semana %}
                                 {% if dia == 0 %}
-                                    <div class="bg-slate-100/40 rounded-3xl border border-transparent"></div>
+                                    <div class="bg-slate-100/40 rounded-3xl border border-transparent celula-vazia"></div>
                                 {% else %}
-                                    <div class="bg-white min-h-[110px] p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-elo-blue transition-all group relative flex flex-col">
+                                    <div class="bg-white min-h-[110px] p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:border-elo-blue transition-all group relative flex flex-col celula-dia">
                                         <span class="text-sm font-black text-slate-300 group-hover:text-elo-blue mb-2">{{ dia }}</span>
-                                        
                                         <div class="space-y-1 overflow-y-auto max-h-[80px] custom-scrollbar">
                                             {% if tarefas_por_dia.get(dia) %}
                                                 {% for tarefa in tarefas_por_dia[dia] %}
-                                                    <a href="/workbench/tarefa/{{ tarefa.id }}/concluir" 
-                                                       class="block px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all {% if tarefa.prioridade == 'Alta' %} bg-red-50 text-red-700 border-l-2 border-red-500 hover:bg-red-100 {% else %} bg-blue-50 text-elo-blue border-l-2 border-elo-blue hover:bg-blue-100 {% endif %}">
+                                                    <a href="/workbench/tarefa/{{ tarefa.id }}/concluir"
+                                                       class="block px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all evento-tarefa {% if tarefa.prioridade == 'Alta' %} bg-red-50 text-red-700 border-l-2 border-red-500 hover:bg-red-100 {% else %} bg-blue-50 text-elo-blue border-l-2 border-elo-blue hover:bg-blue-100 {% endif %}">
                                                         {{ tarefa.descricao[:15] }}{% if tarefa.descricao|length > 15 %}...{% endif %}
                                                     </a>
                                                 {% endfor %}
@@ -138,13 +145,16 @@
                     </div>
                 </div>
             </div>
-        </div> </div>
+        </div>
+
+    </div>
 </div>
 
-<div class="px-10 pb-10 mt-8">
-    <div class="bg-slate-900 rounded-[2.5rem] p-10 flex items-center justify-between shadow-2xl">
-        <div class="flex items-center gap-6">
-            <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white text-2xl">
+{# ── BANNER DE SUPORTE ── #}
+<div class="px-10 pb-10 mt-8 banner-suporte-wrapper">
+    <div class="bg-slate-900 rounded-[2.5rem] p-10 flex items-center justify-between shadow-2xl banner-suporte">
+        <div class="flex items-center gap-6 banner-left">
+            <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-white text-2xl flex-shrink-0">
                 <i class="fa-solid fa-headset"></i>
             </div>
             <div>
@@ -152,7 +162,7 @@
                 <p class="text-slate-400">Nossa equipe de TI está pronta para te atender.</p>
             </div>
         </div>
-        <a href="#" class="bg-white text-slate-950 px-10 py-4 rounded-2xl font-black hover:bg-slate-200 transition">
+        <a href="#" class="btn-chamado bg-white text-slate-950 px-10 py-4 rounded-2xl font-black hover:bg-slate-200 transition whitespace-nowrap">
             Abrir Chamado
         </a>
     </div>
@@ -164,11 +174,11 @@
         if (!btn) return;
 
         e.preventDefault();
-        
+
         const url = btn.getAttribute('data-url');
         const container = document.getElementById('calendar-container');
         const box = document.getElementById('calendar-box');
-        
+
         box.style.opacity = '0.4';
         box.style.pointerEvents = 'none';
 
@@ -179,7 +189,6 @@
                 const doc = parser.parseFromString(html, 'text/html');
                 const newContent = doc.getElementById('calendar-container').innerHTML;
                 container.innerHTML = newContent;
-                
                 document.getElementById('calendar-box').style.opacity = '1';
                 document.getElementById('calendar-box').style.pointerEvents = 'auto';
             })
@@ -193,5 +202,168 @@
 <style>
     .custom-scrollbar::-webkit-scrollbar { width: 3px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    /* ═══════════════════════════════════════════
+       TABLET (768px – 1023px)
+       ═══════════════════════════════════════════ */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .header-perfil { padding: 1.5rem; }
+        .nome-usuario  { font-size: 1.75rem; }
+        .cargo-usuario { font-size: 0.9375rem; }
+
+        /* Grid vira coluna única */
+        .grid-perfil {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1.5rem !important;
+        }
+        .coluna-lateral,
+        .coluna-calendario { width: 100% !important; }
+
+        /* Lateral: dois cards lado a lado no tablet */
+        .coluna-lateral {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        .container-perfil { padding: 1.5rem; }
+
+        /* Calendário: header empilha em telas médias */
+        .calendar-box-wrapper { min-height: auto !important; border-radius: 2rem !important; }
+        .calendar-header { padding: 1.5rem !important; flex-wrap: wrap; gap: 1rem; }
+        .titulo-agenda   { font-size: 1.5rem; }
+        .label-mes       { min-width: 140px !important; font-size: 0.8125rem; padding: 0.625rem 1.25rem; }
+        .area-grade      { padding: 1.25rem !important; }
+
+        /* Células menores */
+        .celula-dia { min-height: 80px !important; padding: 0.5rem !important; border-radius: 1rem !important; }
+        .celula-vazia { border-radius: 1rem !important; }
+        .label-dia  { font-size: 0.5625rem; padding-bottom: 0.5rem; }
+
+        /* Banner */
+        .banner-suporte-wrapper { padding: 0 1.5rem 1.5rem; }
+        .banner-suporte { padding: 1.5rem 2rem !important; border-radius: 2rem !important; flex-wrap: wrap; gap: 1rem; }
+        .btn-chamado    { width: 100%; text-align: center; }
+    }
+
+    /* ═══════════════════════════════════════════
+       MOBILE (até 767px)
+       ═══════════════════════════════════════════ */
+    @media (max-width: 767px) {
+        /* Header do perfil */
+        .header-perfil { padding: 1rem; }
+        .perfil-topo   { gap: 1rem; align-items: flex-start; }
+        .avatar-principal {
+            width: 4rem !important; height: 4rem !important;
+            border-radius: 1rem !important;
+            font-size: 1.5rem !important;
+        }
+        .nome-usuario  { font-size: 1.25rem; }
+        .cargo-usuario { font-size: 0.8125rem; margin-top: 0.125rem; }
+        .badges-perfil { gap: 0.375rem; margin-top: 0.5rem; }
+        .badges-perfil span { font-size: 0.625rem; padding: 0.25rem 0.625rem; }
+
+        /* Container principal */
+        .container-perfil { padding: 0.75rem; }
+
+        .grid-perfil {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+        .coluna-lateral,
+        .coluna-calendario { width: 100% !important; }
+
+        /* Cards laterais compactos */
+        .coluna-lateral .bg-white,
+        .coluna-lateral .bg-elo-navy {
+            padding: 1.25rem !important;
+            border-radius: 1.25rem !important;
+        }
+        .coluna-lateral h2 { font-size: 1rem; margin-bottom: 1rem; }
+        .coluna-lateral .bg-slate-50.p-4 { padding: 0.75rem !important; border-radius: 0.875rem !important; font-size: 0.8125rem; }
+
+        /* Calendário */
+        .calendar-box-wrapper { min-height: auto !important; border-radius: 1.5rem !important; }
+
+        .calendar-header {
+            padding: 1rem !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.875rem;
+        }
+        .titulo-agenda { font-size: 1.25rem; }
+        .calendar-header > p { display: none; } /* subtítulo oculto no mobile */
+
+        .nav-calendario { width: 100%; justify-content: space-between; }
+        .label-mes {
+            flex: 1;
+            min-width: unset !important;
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+        }
+        .nav-calendario .calendar-nav {
+            width: 2.5rem !important; height: 2.5rem !important;
+            border-radius: 0.75rem !important;
+        }
+
+        .area-grade { padding: 0.75rem !important; }
+        .grade-calendario { gap: 0.25rem !important; }
+        .label-dia { font-size: 0.5rem; padding-bottom: 0.375rem; }
+
+        /* Células do calendário bem compactas */
+        .celula-dia {
+            min-height: 52px !important;
+            padding: 0.375rem !important;
+            border-radius: 0.75rem !important;
+        }
+        .celula-dia > span { font-size: 0.625rem; margin-bottom: 0.125rem; }
+        .celula-vazia { border-radius: 0.75rem !important; min-height: 52px; }
+
+        /* Eventos nas células — só ponto colorido no mobile */
+        .evento-tarefa {
+            padding: 0.125rem !important;
+            font-size: 0 !important;   /* esconde texto */
+            border-radius: 50% !important;
+            width: 8px !important;
+            height: 8px !important;
+            border-left: none !important;
+            display: inline-block !important;
+        }
+        .evento-tarefa.bg-red-50  { background-color: #ef4444 !important; }
+        .evento-tarefa.bg-blue-50 { background-color: #3b82f6 !important; }
+
+        /* Banner de suporte */
+        .banner-suporte-wrapper { padding: 0 0.75rem 0.75rem; }
+        .banner-suporte {
+            padding: 1.25rem !important;
+            border-radius: 1.5rem !important;
+            flex-direction: column !important;
+            gap: 1rem;
+        }
+        .banner-left  { gap: 0.875rem; }
+        .banner-left .w-16 { width: 2.5rem !important; height: 2.5rem !important; border-radius: 0.75rem !important; font-size: 1rem !important; }
+        .banner-left h3 { font-size: 0.9375rem; }
+        .banner-left p  { font-size: 0.8125rem; }
+        .btn-chamado {
+            width: 100%; text-align: center;
+            padding: 0.75rem 1rem !important;
+            border-radius: 0.875rem !important;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* ═══════════════════════════════════════════
+       TELAS MUITO PEQUENAS (até 360px)
+       ═══════════════════════════════════════════ */
+    @media (max-width: 360px) {
+        .celula-dia   { min-height: 42px !important; }
+        .celula-vazia { min-height: 42px !important; }
+        .grade-calendario { gap: 0.2rem !important; }
+    }
 </style>
+
 {% endblock %}

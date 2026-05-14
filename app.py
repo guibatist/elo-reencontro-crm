@@ -944,6 +944,68 @@ def deletar_anexo(id):
     # 3. Redireciona para a página do paciente (ver_acolhimento)
     return redirect(url_for('ver_acolhimento', id=id_acolhimento))
 
+# Função para ligar à base de dados Neon (certifica-te que a variável de ambiente está configurada)
+def ligar_banco():
+    return psycopg2.connect(os.environ.get("DATABASE_URL"))
+
+# 1. Função para ADICIONAR um novo Sponsor
+def adicionar_sponsor(nome, categoria, especialidade, telefone, email, nivel_influencia, notas):
+    conn = ligar_banco()
+    cursor = conn.cursor()
+    
+    # O comando SQL para inserir os dados
+    sql = """
+        INSERT INTO sponsors (nome, categoria, especialidade, telefone, email, nivel_influencia, ultimo_contato, notas)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    
+    # Define a data de hoje como o "último contacto" inicial
+    hoje = datetime.now().date()
+    valores = (nome, categoria, especialidade, telefone, email, nivel_influencia, hoje, notas)
+    
+    cursor.execute(sql, valores)
+    conn.commit() # Salva as alterações definitivamente
+    
+    cursor.close()
+    conn.close()
+    return True
+
+# 2. Função para LISTAR todos os Sponsors no ecrã
+def obter_sponsors():
+    conn = ligar_banco()
+    cursor = conn.cursor()
+    
+    # Puxa os dados ordenados: os com 5 estrelas (nível de influência maior) aparecem primeiro
+    cursor.execute("SELECT id, nome, categoria, especialidade, telefone, email, nivel_influencia, ultimo_contato FROM sponsors ORDER BY nivel_influencia DESC")
+    lista_sponsors = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return lista_sponsors
+
+@app.route('/sponsors', methods=['GET', 'POST'])
+def sponsors():
+    if request.method == 'POST':
+        # Pegando os dados do formulário HTML
+        nome = request.form.get('nome')
+        categoria = request.form.get('categoria')
+        especialidade = request.form.get('especialidade')
+        telefone = request.form.get('telefone')
+        email = request.form.get('email')
+        nivel_influencia = request.form.get('nivel_influencia')
+        notas = request.form.get('notas')
+        
+        # Chama a função que criamos antes para salvar no Neon
+        adicionar_sponsor(nome, categoria, especialidade, telefone, email, nivel_influencia, notas)
+        
+        # Recarrega a página para mostrar o novo parceiro na lista
+        return redirect('/sponsors')
+    
+    # Se for GET (apenas acessando a página), busca a lista no banco e renderiza a tela
+    lista_sponsors = obter_sponsors()
+    return render_template('crm/sponsors.html', sponsors=lista_sponsors)
+
 @app.route('/logout')
 def logout():
     logout_user()

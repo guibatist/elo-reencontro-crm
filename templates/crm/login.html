@@ -10,28 +10,186 @@
         body { font-family: 'Inter', sans-serif; }
         .bg-elo-navy { background-color: #0F172A; }
         .text-elo-blue { color: #3B82F6; }
-        
-        /* Animação suave para o background */
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        /* ═══════════════════════════════════════════
+           TABLET (768px – 1023px)
+           ═══════════════════════════════════════════ */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            /* Mantém layout side-by-side mas reduz proporções */
+            .painel-form {
+                width: 55% !important;
+                padding: 3rem 2.5rem !important;
+            }
+            .painel-hero {
+                width: 45% !important;
+                padding: 3rem 2rem !important;
+                display: flex !important;
+            }
+            .titulo-login {
+                font-size: 2.75rem !important;
+            }
+            .titulo-hero {
+                font-size: 3.5rem !important;
+            }
+            .subtitulo-hero {
+                font-size: 1rem !important;
+                margin-top: 1.5rem !important;
+            }
+            .stats-hero {
+                margin-top: 2.5rem !important;
+                padding-top: 2rem !important;
+                gap: 1.5rem !important;
+            }
+        }
+
+        /* ═══════════════════════════════════════════
+           MOBILE (até 767px)
+           ═══════════════════════════════════════════ */
+        @media (max-width: 767px) {
+            /* Layout vira coluna única */
+            body {
+                flex-direction: column !important;
+                overflow: auto !important;
+            }
+
+            .painel-form {
+                width: 100% !important;
+                border-right: none !important;
+                padding: 2.5rem 1.5rem 2rem !important;
+                /* Garante que o form ocupe a tela toda antes do hero */
+                min-height: 100svh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Hero aparece abaixo do form, compacto */
+            .painel-hero {
+                display: flex !important;
+                width: 100% !important;
+                padding: 2.5rem 1.5rem 3rem !important;
+                min-height: auto !important;
+            }
+
+            /* Blurs decorativos reposicionados */
+            .painel-hero .blur-hero-top {
+                width: 300px !important;
+                height: 300px !important;
+            }
+            .painel-hero .blur-hero-bottom {
+                width: 200px !important;
+                height: 200px !important;
+            }
+
+            /* Logo e título do form */
+            .logo-box {
+                width: 3rem !important;
+                height: 3rem !important;
+                border-radius: 0.875rem !important;
+                margin-bottom: 1.25rem !important;
+            }
+            .logo-box span {
+                font-size: 1.5rem !important;
+            }
+
+            .titulo-login {
+                font-size: 2.5rem !important;
+            }
+
+            .subtitulo-form {
+                font-size: 0.9375rem !important;
+                margin-top: 0.875rem !important;
+            }
+
+            .form-wrapper {
+                margin-bottom: 0 !important;
+            }
+
+            /* Inputs com tamanho de toque adequado */
+            .input-acesso {
+                padding: 1rem 1.25rem !important;
+                font-size: 1rem;
+            }
+
+            /* Botão de submit */
+            .btn-submit {
+                padding: 1.125rem !important;
+            }
+
+            /* Rodapé do form */
+            .rodape-form {
+                margin-top: 2rem !important;
+            }
+
+            /* Hero mobile: conteúdo compacto */
+            .badge-hero {
+                font-size: 0.5625rem !important;
+                padding: 0.375rem 0.875rem !important;
+            }
+
+            .titulo-hero {
+                font-size: 2.75rem !important;
+                line-height: 0.9 !important;
+            }
+
+            .subtitulo-hero {
+                font-size: 0.9375rem !important;
+                margin-top: 1.25rem !important;
+            }
+
+            .stats-hero {
+                margin-top: 2rem !important;
+                padding-top: 1.5rem !important;
+                gap: 1.5rem !important;
+                flex-wrap: wrap;
+            }
+
+            .stats-hero > div p:first-child {
+                font-size: 1.25rem !important;
+            }
+
+            .versao-label {
+                bottom: 1rem !important;
+                right: 1rem !important;
+            }
+        }
+
+        /* ═══════════════════════════════════════════
+           TELAS MUITO PEQUENAS (até 360px)
+           ═══════════════════════════════════════════ */
+        @media (max-width: 360px) {
+            .painel-form {
+                padding: 2rem 1rem 1.5rem !important;
+            }
+            .titulo-login {
+                font-size: 2rem !important;
+            }
+            .titulo-hero {
+                font-size: 2.25rem !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen flex overflow-hidden">
 
-    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 border-r border-slate-100">
-        <div class="max-w-md w-full">
-            
+    {# ── PAINEL ESQUERDO: FORMULÁRIO ── #}
+    <div class="painel-form w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 border-r border-slate-100">
+        <div class="max-w-md w-full form-wrapper">
+
             <div class="mb-12">
-                <div class="w-14 h-14 bg-blue-600 rounded-2xl mb-8 flex items-center justify-center shadow-2xl shadow-blue-400/30 rotate-3 transition-transform hover:rotate-0 cursor-default">
+                <div class="logo-box w-14 h-14 bg-blue-600 rounded-2xl mb-8 flex items-center justify-center shadow-2xl shadow-blue-400/30 rotate-3 transition-transform hover:rotate-0 cursor-default">
                     <span class="text-white font-black text-3xl italic">E</span>
                 </div>
-                <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-[0.9]">
+                <h1 class="titulo-login text-5xl font-black text-slate-900 tracking-tighter leading-[0.9]">
                     Elo<br><span class="text-blue-600 italic">Workbench</span>
                 </h1>
-                <p class="text-slate-500 mt-6 text-lg font-medium leading-relaxed">
+                <p class="subtitulo-form text-slate-500 mt-6 text-lg font-medium leading-relaxed">
                     Gestão de alta performance para agentes de acolhimento.
                 </p>
             </div>
@@ -50,7 +208,7 @@
                 <div class="space-y-2">
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ID de Acesso</label>
                     <input type="text" name="username" required placeholder="nome.sobrenome"
-                           class="w-full px-6 py-5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-50 focus:border-blue-200 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300">
+                           class="input-acesso w-full px-6 py-5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-50 focus:border-blue-200 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300">
                 </div>
 
                 <div class="space-y-2">
@@ -58,16 +216,16 @@
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Senha Corporativa</label>
                     </div>
                     <input type="password" name="password" required placeholder="••••••••"
-                           class="w-full px-6 py-5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-50 focus:border-blue-200 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300">
+                           class="input-acesso w-full px-6 py-5 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-50 focus:border-blue-200 outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300">
                 </div>
 
-                <button type="submit" 
-                        class="w-full bg-[#0F172A] text-white font-black py-6 rounded-2xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-900/20 uppercase tracking-widest text-xs active:scale-[0.98]">
+                <button type="submit"
+                        class="btn-submit w-full bg-[#0F172A] text-white font-black py-6 rounded-2xl hover:bg-blue-600 transition-all shadow-xl shadow-blue-900/20 uppercase tracking-widest text-xs active:scale-[0.98]">
                     Acessar Unidade
                 </button>
             </form>
 
-            <div class="mt-12 flex items-center justify-between">
+            <div class="rodape-form mt-12 flex items-center justify-between">
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
                     Segurança <span class="text-blue-500">Elo Reencontro</span>
                 </p>
@@ -76,31 +234,31 @@
         </div>
     </div>
 
-    <div class="hidden lg:flex w-1/2 bg-elo-navy relative items-center justify-center p-20 overflow-hidden">
-        
-        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[140px] -mr-48 -mt-48"></div>
-        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-900/20 rounded-full blur-[100px] -ml-24 -mb-24"></div>
-        
+    {# ── PAINEL DIREITO: HERO (desktop + tablet + mobile) ── #}
+    <div class="painel-hero hidden lg:flex w-1/2 bg-elo-navy relative items-center justify-center p-20 overflow-hidden">
+
+        <div class="blur-hero-top absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[140px] -mr-48 -mt-48"></div>
+        <div class="blur-hero-bottom absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-900/20 rounded-full blur-[100px] -ml-24 -mb-24"></div>
         <div class="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
         <div class="relative z-10 max-w-xl">
             <div class="mb-10">
-                <span class="px-5 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
+                <span class="badge-hero px-5 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
                     Inteligência Comercial & Acolhimento
                 </span>
             </div>
-            
-            <h2 class="text-7xl font-black text-white leading-[0.85] tracking-tighter">
+
+            <h2 class="titulo-hero text-7xl font-black text-white leading-[0.85] tracking-tighter">
                 Transformando<br>
                 <span class="text-blue-500 italic">contatos</span> em<br>
                 vidas salvas.
             </h2>
-            
-            <p class="text-slate-400 text-xl mt-10 leading-relaxed font-medium">
+
+            <p class="subtitulo-hero text-slate-400 text-xl mt-10 leading-relaxed font-medium">
                 O Workbench Elo é o centro de comando para consultores que buscam excelência no atendimento e precisão na conversão de vidas.
             </p>
 
-            <div class="mt-16 flex gap-12 border-t border-white/5 pt-12">
+            <div class="stats-hero mt-16 flex gap-12 border-t border-white/5 pt-12">
                 <div>
                     <p class="text-2xl font-black text-white italic">100%</p>
                     <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Encriptado</p>
@@ -116,7 +274,7 @@
             </div>
         </div>
 
-        <div class="absolute bottom-10 right-10">
+        <div class="versao-label absolute bottom-10 right-10">
             <span class="text-slate-700 font-black text-[10px] tracking-widest">V 2.0.4 - STABLE</span>
         </div>
     </div>

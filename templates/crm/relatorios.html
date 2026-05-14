@@ -1,17 +1,31 @@
 {% extends 'crm/base.html' %}
 
 {% block content %}
-<div class="p-10" x-data="{ tabela: 'acolhimentos' }">
+<div class="p-10 report-builder" x-data="{ tabela: 'acolhimentos', painelAberto: true }">
     <header class="mb-10">
         <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Report Builder</h1>
         <p class="text-slate-500 font-medium">Selecione as dimensões e métricas para análise.</p>
     </header>
 
-    <form method="POST" class="grid grid-cols-12 gap-10">
-        <div class="col-span-4 space-y-6">
-            <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+    <form method="POST" class="grid grid-cols-12 gap-10 form-grid">
+
+        {# ── PAINEL DE CONFIGURAÇÃO ── #}
+        <div class="col-span-4 space-y-6 painel-config" :class="{ 'painel-fechado': !painelAberto }">
+
+            {# Botão toggle — visível só no mobile #}
+            <button type="button"
+                    @click="painelAberto = !painelAberto"
+                    class="toggle-painel w-full py-3 px-5 bg-slate-900 text-white rounded-2xl font-black flex items-center justify-between">
+                <span x-text="painelAberto ? 'Configurações' : '⚙ Configurar Relatório'"></span>
+                <i class="fa-solid transition-transform duration-300"
+                   :class="painelAberto ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+
+            <div class="painel-inner bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">1. Objeto Principal</label>
-                <select name="tabela" x-model="tabela" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-elo-blue">
+                <select name="tabela" x-model="tabela"
+                        class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-elo-blue">
                     <option value="acolhimentos">Acolhimentos (Oportunidades)</option>
                     <option value="tarefas">Atividades (Tarefas)</option>
                 </select>
@@ -22,7 +36,8 @@
                         <div x-show="tabela == '{{ tab }}'" class="space-y-2">
                             {% for key, label in campos.items() %}
                             <label class="flex items-center p-3 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition">
-                                <input type="checkbox" name="colunas" value="{{ key }}" checked class="w-5 h-5 rounded text-elo-blue">
+                                <input type="checkbox" name="colunas" value="{{ key }}" checked
+                                       class="w-5 h-5 rounded text-elo-blue">
                                 <span class="ml-3 text-sm font-bold text-slate-700">{{ label }}</span>
                             </label>
                             {% endfor %}
@@ -31,31 +46,37 @@
                 </div>
 
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mt-8 mb-4">3. Filtros Rápidos</label>
-                <select name="filtro_status" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none">
+                <select name="filtro_status"
+                        class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none">
                     <option value="">Todos os Status</option>
                     <option value="Novo">Novo</option>
                     <option value="Internado (Ganho)">Internado (Ganho)</option>
                 </select>
 
                 <div class="mt-10 pt-6 border-t border-slate-100 space-y-3">
-                    <button type="submit" name="exportar" value="false" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition">
+                    <button type="submit" name="exportar" value="false"
+                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition">
                         PRÉ-VISUALIZAR
                     </button>
-                    <button type="submit" name="exportar" value="true" class="w-full py-4 bg-green-600 text-white rounded-2xl font-black hover:bg-green-700 transition flex items-center justify-center gap-2">
+                    <button type="submit" name="exportar" value="true"
+                            class="w-full py-4 bg-green-600 text-white rounded-2xl font-black hover:bg-green-700 transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-file-excel"></i> EXPORTAR EXCEL
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-span-8">
+        {# ── ÁREA DE RESULTADOS ── #}
+        <div class="col-span-8 area-resultados">
             {% if resultados %}
             <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-                <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 class="font-black text-slate-900">Resultados da Consulta ({{ resultados|length }})</h3>
+                <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center cabecalho-resultados">
+                    <h3 class="font-black text-slate-900">
+                        Resultados da Consulta ({{ resultados|length }})
+                    </h3>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left tabela-resultados">
                         <thead>
                             <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                 {% for col in colunas %}
@@ -69,13 +90,11 @@
                                 {% for col in colunas %}
                                 <td class="px-6 py-4 font-medium text-slate-600">
                                     {% set ns = namespace(valor=item) %}
-                                    
                                     {% for part in col.split('.') %}
                                         {% if ns.valor %}
                                             {% set ns.valor = ns.valor|attr(part) %}
                                         {% endif %}
                                     {% endfor %}
-                                    
                                     {{ ns.valor if ns.valor != None else '-' }}
                                 </td>
                                 {% endfor %}
@@ -86,13 +105,183 @@
                 </div>
             </div>
             {% else %}
-            <div class="h-full border-4 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center text-slate-300 p-20 text-center">
+            <div class="empty-state h-full border-4 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center text-slate-300 p-20 text-center">
                 <i class="fa-solid fa-chart-pie text-6xl mb-6"></i>
                 <p class="text-xl font-black">Configure seu relatório à esquerda</p>
                 <p class="text-sm font-medium mt-2">Escolha a tabela e as colunas que deseja analisar.</p>
             </div>
             {% endif %}
         </div>
+
     </form>
 </div>
+
+{# ═══════════════════════════════════════════════
+   RESPONSIVIDADE — Mobile (~375px) e Tablet (~768px)
+   ═══════════════════════════════════════════════ #}
+<style>
+/* ── BASE: reset de padding para telas pequenas ── */
+@media (max-width: 1024px) {
+    .report-builder {
+        padding: 1.5rem 1rem;
+    }
+
+    .report-builder header h1 {
+        font-size: 1.75rem;
+    }
+
+    /* Grid passa de 12 colunas para coluna única */
+    .form-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.25rem !important;
+    }
+
+    .painel-config,
+    .area-resultados {
+        width: 100% !important;
+        grid-column: span 12 / span 12 !important;
+    }
+}
+
+/* ── TABLET (768px – 1024px) ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .report-builder {
+        padding: 2rem 1.5rem;
+    }
+
+    /* Botão toggle fica oculto no tablet — painel sempre visível */
+    .toggle-painel {
+        display: none !important;
+    }
+
+    .painel-inner {
+        display: block !important;
+        padding: 1.5rem !important;
+    }
+
+    /* Cabeçalho de resultados empilha se necessário */
+    .cabecalho-resultados {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Empty state menos alto no tablet */
+    .empty-state {
+        min-height: 260px;
+        padding: 3rem 2rem !important;
+    }
+
+    /* Tabela: fonte menor para caber melhor */
+    .tabela-resultados th,
+    .tabela-resultados td {
+        padding: 0.625rem 1rem !important;
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+}
+
+/* ── MOBILE (até 767px) ── */
+@media (max-width: 767px) {
+    .report-builder {
+        padding: 1rem 0.75rem;
+    }
+
+    .report-builder header {
+        margin-bottom: 1.25rem;
+    }
+
+    .report-builder header h1 {
+        font-size: 1.5rem;
+    }
+
+    /* Botão toggle aparece para expandir/colapsar o painel */
+    .toggle-painel {
+        display: flex !important;
+    }
+
+    /* Painel colapsável via Alpine */
+    .painel-fechado .painel-inner {
+        display: none !important;
+    }
+
+    .painel-inner {
+        padding: 1.25rem !important;
+        border-radius: 1.25rem !important;
+    }
+
+    /* Inputs e selects com tamanho de toque adequado */
+    .painel-inner select,
+    .painel-inner input[type="checkbox"] {
+        font-size: 1rem;
+    }
+
+    /* Checkboxes: área de toque generosa */
+    .painel-inner label {
+        padding: 0.625rem 0.75rem !important;
+    }
+
+    /* Botões de ação empilhados, altura confortável */
+    .painel-inner button[type="submit"] {
+        padding: 0.875rem 1rem !important;
+        font-size: 0.875rem;
+    }
+
+    /* Resultados */
+    .area-resultados {
+        order: -1; /* Resultados aparecem ACIMA das configurações no mobile */
+    }
+
+    /* Quando não há resultados, empty state compacto */
+    .empty-state {
+        min-height: 180px;
+        padding: 2rem 1rem !important;
+        border-radius: 1.5rem !important;
+    }
+
+    .empty-state i {
+        font-size: 2.5rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .empty-state p.text-xl {
+        font-size: 1rem !important;
+    }
+
+    /* Cabeçalho da tabela de resultados */
+    .cabecalho-resultados {
+        padding: 1rem 1.25rem !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .cabecalho-resultados h3 {
+        font-size: 0.9rem;
+    }
+
+    /* Tabela com scroll horizontal e fonte compacta */
+    .tabela-resultados th,
+    .tabela-resultados td {
+        padding: 0.5rem 0.875rem !important;
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
+}
+
+/* ── TELAS MUITO PEQUENAS (até 360px) ── */
+@media (max-width: 360px) {
+    .report-builder {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .report-builder header h1 {
+        font-size: 1.25rem;
+    }
+
+    .painel-inner {
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+    }
+}
+</style>
 {% endblock %}

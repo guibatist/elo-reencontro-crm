@@ -6,71 +6,71 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <div id="dashboard-content" class="bg-slate-50 min-h-screen">
-    <header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-10 py-8 sticky top-0 z-10 flex items-center justify-between">
+    <header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-6 py-6 md:px-10 md:py-8 sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-black text-slate-950 tracking-tighter">Elo Analytics</h1>
-            <p class="text-base text-slate-600">Comando central de inteligência comercial.</p>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-950 tracking-tighter">Elo Analytics</h1>
+            <p class="text-sm md:text-base text-slate-600">Comando central de inteligência comercial.</p>
         </div>
         <div class="flex items-center gap-4 html2pdf__empty">
-            <button onclick="exportarPDF()" class="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition">
-                <i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> PDF
+            <button onclick="exportarPDF()" class="w-full md:w-auto bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition flex items-center justify-center">
+                <i class="fa-solid fa-file-pdf text-red-500 mr-2"></i> Exportar PDF
             </button>
         </div>
     </header>
 
-    <div class="p-10 space-y-8">
+    <div class="p-4 md:p-10 space-y-6 md:space-y-8">
         
-        <div class="grid grid-cols-3 gap-6">
-            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Leads Hoje</p>
-                <p class="text-4xl font-black text-elo-navy mt-2">{{ leads_hoje }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div class="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-slate-200">
+                <p class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Leads Hoje</p>
+                <p class="text-3xl md:text-4xl font-black text-elo-navy mt-2">{{ leads_hoje }}</p>
             </div>
-            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Em Atendimento</p>
-                <p class="text-4xl font-black text-elo-blue mt-2">{{ em_atendimento }}</p>
+            <div class="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-slate-200">
+                <p class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Em Atendimento</p>
+                <p class="text-3xl md:text-4xl font-black text-elo-blue mt-2">{{ em_atendimento }}</p>
             </div>
-            <div class="bg-green-600 p-8 rounded-[2rem] shadow-lg shadow-green-600/20 text-white">
-                <p class="text-xs font-black text-white/70 uppercase tracking-widest">Internações no Mês</p>
-                <p class="text-4xl font-black mt-2">{{ internacoes_mes }}</p>
+            <div class="bg-green-600 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-lg shadow-green-600/20 text-white">
+                <p class="text-[10px] md:text-xs font-black text-white/70 uppercase tracking-widest">Internações no Mês</p>
+                <p class="text-3xl md:text-4xl font-black mt-2">{{ internacoes_mes }}</p>
             </div>
         </div>
 
-        <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+        <div class="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-slate-200">
             <h2 class="text-lg font-black text-slate-900 tracking-tighter mb-4">Volume de Captação (7 Dias)</h2>
-            <div class="h-64 w-full">
+            <div class="h-48 md:h-64 w-full">
                 <canvas id="graficoTimeline"></canvas>
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+            <div class="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-slate-200">
                 <h2 class="text-lg font-black text-slate-900 tracking-tighter mb-4">Status do Funil</h2>
                 <div class="h-56 relative"><canvas id="graficoFunil"></canvas></div>
             </div>
 
-            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+            <div class="bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-slate-200">
                 <h2 class="text-lg font-black text-slate-900 tracking-tighter mb-4">Mapa de Urgência</h2>
                 <div class="h-56 relative"><canvas id="graficoUrgencia"></canvas></div>
             </div>
 
-            <div class="bg-slate-900 p-8 rounded-[2rem] shadow-xl text-white flex flex-col justify-between">
+            <div class="bg-slate-900 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-xl text-white flex flex-col justify-between">
                 <div>
                     <h2 class="text-lg font-black tracking-tighter">Performance Global</h2>
                     
-                    <div class="mt-8">
-                        <div class="flex justify-between text-xs font-bold mb-2">
+                    <div class="mt-6 md:mt-8">
+                        <div class="flex justify-between text-[10px] md:text-xs font-bold mb-2">
                             <span class="text-slate-400 uppercase tracking-widest">Taxa de Conversão</span>
                             <span class="text-green-400">{{ taxa_conversao }}%</span>
                         </div>
-                        <div class="w-full bg-slate-800 rounded-full h-4">
-                            <div class="bg-green-400 h-4 rounded-full transition-all" style="width: {{ taxa_conversao }}%"></div>
+                        <div class="w-full bg-slate-800 rounded-full h-3 md:h-4">
+                            <div class="bg-green-400 h-3 md:h-4 rounded-full transition-all" style="width: {{ taxa_conversao }}%"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-6 border-t border-slate-700 pt-6">
-                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Leads por Consultor</h2>
+                <div class="mt-8 border-t border-slate-700 pt-6">
+                    <h2 class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Leads por Consultor</h2>
                     <div class="h-32 relative"><canvas id="graficoConsultor"></canvas></div>
                 </div>
             </div>
@@ -80,11 +80,10 @@
 </div>
 
 <script>
-    // Configurações Globais do Chart.js para ficar com cara de B.I. Premium
+    // ... (Mantive seu JS original que já está correto com responsive: true)
     Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = '#64748B'; // slate-500
+    Chart.defaults.color = '#64748B'; 
     
-    // 1. Linha do Tempo
     new Chart(document.getElementById('graficoTimeline').getContext('2d'), {
         type: 'line',
         data: {
@@ -92,10 +91,10 @@
             datasets: [{
                 label: 'Novos Acolhimentos',
                 data: {{ dados_timeline | safe }},
-                borderColor: '#2563EB', // elo-blue
+                borderColor: '#2563EB',
                 backgroundColor: 'rgba(37, 99, 235, 0.1)',
                 borderWidth: 3,
-                tension: 0.4, // Curva suave
+                tension: 0.4,
                 fill: true,
                 pointBackgroundColor: '#0F172A',
                 pointRadius: 4
@@ -104,7 +103,6 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    // 2. Gráfico de Funil
     new Chart(document.getElementById('graficoFunil').getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -118,7 +116,6 @@
         options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
     });
 
-    // 3. Gráfico Polar (Urgência)
     new Chart(document.getElementById('graficoUrgencia').getContext('2d'), {
         type: 'polarArea',
         data: {
@@ -131,7 +128,6 @@
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 
-    // 4. Gráfico de Barras (Consultores)
     new Chart(document.getElementById('graficoConsultor').getContext('2d'), {
         type: 'bar',
         data: {
@@ -144,18 +140,21 @@
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            indexAxis: 'y', // Barras Horizontais
+            indexAxis: 'y',
             plugins: { legend: { display: false } },
             scales: { x: { display: false }, y: { ticks: { color: '#94A3B8' }, grid: { display: false } } }
         }
     });
 
-    // PDF
     function exportarPDF() {
         const element = document.getElementById('dashboard-content');
         const botoes = document.querySelector('.html2pdf__empty');
         botoes.style.display = 'none';
-        html2pdf().set({ margin: 0.2, filename: 'Analytics.pdf', jsPDF: { format: 'a4', orientation: 'landscape' } }).from(element).save().then(() => botoes.style.display = 'flex');
+        html2pdf().set({ 
+            margin: 0.2, 
+            filename: 'Analytics.pdf', 
+            jsPDF: { format: 'a4', orientation: 'landscape' } 
+        }).from(element).save().then(() => botoes.style.display = 'flex');
     }
 </script>
 {% endblock %}

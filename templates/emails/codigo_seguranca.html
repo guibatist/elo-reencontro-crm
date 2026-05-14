@@ -1,38 +1,147 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; line-height: 1.6; }
-        .container { max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        .header { background-color: #0f172a; padding: 30px; text-align: center; }
-        .logo { background-color: #2563eb; color: white; width: 40px; height: 40px; line-height: 40px; border-radius: 10px; display: inline-block; font-weight: 900; font-style: italic; font-size: 20px; }
-        .content { padding: 40px; background-color: #ffffff; text-align: center; }
-        .code-display { background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 30px; margin: 30px 0; }
-        .code-value { color: #2563eb; font-size: 42px; font-weight: 900; letter-spacing: 10px; font-family: 'Courier New', monospace; }
-        .footer { background-color: #f8fafc; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .alert { font-size: 13px; color: #ef4444; font-weight: bold; margin-top: 20px; }
+        /* Resets básicos para clientes de e-mail */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        
+        /* Paleta e Tipografia Premium */
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+            margin: 0; 
+            padding: 40px 20px; 
+            line-height: 1.6; 
+        }
+        
+        .wrapper { 
+            width: 100%; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 24px; 
+            overflow: hidden; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        .header { 
+            background-color: #ffffff; 
+            padding: 40px 40px 20px 40px; 
+            text-align: center; 
+        }
+        
+        .logo { 
+            width: auto; 
+            height: 60px; 
+            max-width: 100%; 
+        }
+        
+        .content { 
+            padding: 10px 40px 40px 40px; 
+            text-align: center; 
+        }
+        
+        h2 { 
+            margin-top: 0; 
+            font-size: 24px; 
+            font-weight: 900; 
+            letter-spacing: -0.5px; 
+            color: #0f172a; 
+        }
+        
+        p { 
+            font-size: 15px; 
+            color: #475569; 
+            margin-bottom: 24px; 
+        }
+        
+        /* Box de Exibição do Código */
+        .code-display { 
+            background-color: #f8fafc; 
+            border: 2px dashed #cbd5e1; 
+            border-radius: 16px; 
+            padding: 30px; 
+            margin: 30px 0; 
+        }
+        
+        .code-title { 
+            font-size: 10px; 
+            font-weight: 900; 
+            color: #94a3b8; 
+            margin-bottom: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+        }
+        
+        .code-value { 
+            color: #2563eb; 
+            font-size: 42px; 
+            font-weight: 900; 
+            letter-spacing: 12px; 
+            font-family: 'Courier New', monospace; 
+        }
+        
+        /* Box de Alerta */
+        .alert { 
+            font-size: 12px; 
+            color: #ef4444; 
+            background-color: #fef2f2; 
+            padding: 16px; 
+            border-radius: 12px; 
+            border: 1px solid #fca5a5; 
+            font-weight: 600; 
+            margin-top: 30px; 
+            text-align: left;
+        }
+        
+        /* Rodapé */
+        .footer { 
+            background-color: #f8fafc; 
+            padding: 30px 40px; 
+            text-align: center; 
+            border-top: 1px solid #e2e8f0; 
+        }
+        
+        .footer p { 
+            font-size: 10px; 
+            color: #94a3b8; 
+            font-weight: 900; 
+            margin: 0; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="wrapper">
+        
         <div class="header">
-            <h2 style="color: white; margin: 10px 0 0 0; font-size: 18px;">Elo <span style="color: #3b82f6;">Reencontro</span></h2>
+            <img src="https://eloreencontro.com.br/static/logo.png" alt="Elo Reencontro" class="logo">
         </div>
+        
         <div class="content">
-            <h2 style="margin-top: 0; color: #0f172a;">Verificação de Acesso</h2>
-            <p style="color: #64748b;">Olá, <strong>{{ nome }}</strong>. Use o código abaixo para validar seu acesso ao Workbench e configurar sua senha definitiva.</p>
+            <h2>Verificação de Acesso</h2>
+            <p>Olá, <strong style="color: #0f172a;">{{ nome }}</strong>. Use o código abaixo para validar seu acesso ao Workbench e configurar sua senha definitiva.</p>
             
             <div class="code-display">
-                <div style="font-size: 10px; font-weight: 900; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Seu Código de 6 Dígitos</div>
+                <div class="code-title">Seu Código de 6 Dígitos</div>
                 <div class="code-value">{{ codigo }}</div>
             </div>
 
-            <p class="alert">Se você não solicitou este acesso, ignore este e-mail ou entre em contato com o suporte técnico.</p>
+            <div class="alert">
+                Se você não solicitou este acesso, ignore este e-mail ou entre em contato com o nosso suporte técnico imediatamente.
+            </div>
         </div>
+        
         <div class="footer">
-            Elo Reencontro &copy; 2026 - Sistema de Inteligência Comercial
+            <p>&copy; 2026 Elo Reencontro - Inteligência em Acolhimento</p>
         </div>
+        
     </div>
 </body>
 </html>

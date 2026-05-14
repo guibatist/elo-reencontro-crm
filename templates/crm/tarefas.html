@@ -3,14 +3,15 @@
 {% block title %}Gestão de Tarefas | Elo Workbench{% endblock %}
 
 {% block content %}
-<header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-10 py-8 sticky top-0 z-10">
+<header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-10 py-8 sticky top-0 z-10 header-tarefas">
     <h1 class="text-3xl font-black text-slate-950 tracking-tighter">Gestão de Tarefas</h1>
     <p class="text-base text-slate-600 mt-1.5">Organize suas ações pendentes e relatórios de contato.</p>
 </header>
 
-<div class="p-10">
+<div class="p-10 container-tarefas">
     <div class="grid gap-8">
-        
+
+        {# ── TAREFAS PENDENTES ── #}
         <div class="space-y-4">
             <div class="flex items-center gap-3 mb-2 px-2">
                 <span class="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></span>
@@ -19,19 +20,22 @@
 
             <div class="grid gap-6">
                 {% for tarefa in pendentes %}
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
-                    <div class="flex items-center gap-6">
-                        <div class="w-12 h-12 bg-elo-light rounded-2xl flex items-center justify-center text-elo-navy font-bold text-xl uppercase">
+                <div class="card-tarefa bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+
+                    {# Lado esquerdo: avatar + info #}
+                    <div class="flex items-center gap-6 card-left">
+                        <div class="w-12 h-12 bg-elo-light rounded-2xl flex items-center justify-center text-elo-navy font-bold text-xl uppercase flex-shrink-0">
                             {{ tarefa.acolhimento.paciente.nome_completo[0] }}
                         </div>
-                        <div>
+                        <div class="card-info">
                             <h3 class="font-black text-slate-900 text-lg leading-tight">{{ tarefa.descricao }}</h3>
                             <p class="text-sm text-slate-500">Paciente: <span class="font-semibold text-slate-700">{{ tarefa.acolhimento.paciente.nome_completo }}</span></p>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-10">
-                        <div class="text-center">
+                    {# Lado direito: metadados + botão #}
+                    <div class="flex items-center gap-10 card-right">
+                        <div class="text-center meta-item">
                             <p class="text-[10px] font-black text-slate-400 uppercase">Proprietário</p>
                             <div class="flex items-center justify-center gap-1.5 mt-1">
                                 <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -40,20 +44,22 @@
                             </div>
                         </div>
 
-                        <div class="text-center">
+                        <div class="text-center meta-item">
                             <p class="text-[10px] font-black text-slate-400 uppercase">Prioridade</p>
                             <span class="text-xs font-bold {% if tarefa.prioridade == 'Alta' %} text-red-600 {% else %} text-orange-500 {% endif %}">
                                 ● {{ tarefa.prioridade }}
                             </span>
                         </div>
-                        <div class="text-center">
+
+                        <div class="text-center meta-item">
                             <p class="text-[10px] font-black text-slate-400 uppercase">Vencimento</p>
                             <span class="text-xs font-bold text-slate-700">
                                 {{ tarefa.data_vencimento.strftime('%d/%m/%Y') }}
                             </span>
                         </div>
-                        <a href="/workbench/tarefa/{{ tarefa.id }}/concluir" 
-                           class="bg-elo-blue/10 text-elo-blue px-6 py-2.5 rounded-xl font-bold hover:bg-elo-blue hover:text-white transition inline-block">
+
+                        <a href="/workbench/tarefa/{{ tarefa.id }}/concluir"
+                           class="btn-executar bg-elo-blue/10 text-elo-blue px-6 py-2.5 rounded-xl font-bold hover:bg-elo-blue hover:text-white transition inline-block whitespace-nowrap">
                             Executar e Relatar
                         </a>
                     </div>
@@ -66,23 +72,26 @@
             </div>
         </div>
 
+        {# ── TAREFAS CONCLUÍDAS ── #}
         {% if concluidas %}
         <div class="space-y-4 mt-6">
             <div class="flex items-center gap-3 mb-2 px-2 opacity-50">
                 <span class="w-3 h-3 bg-slate-400 rounded-full"></span>
                 <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Concluídas Recentemente</h2>
             </div>
-            
+
             <div class="grid gap-4">
                 {% for tarefa in concluidas %}
-                <div class="bg-white/50 p-5 rounded-3xl border border-slate-200 flex items-center justify-between opacity-60">
-                    <div class="flex items-center gap-6">
-                        <div class="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                <div class="card-concluida bg-white/50 p-5 rounded-3xl border border-slate-200 flex items-center justify-between opacity-60">
+                    <div class="flex items-center gap-6 card-left">
+                        <div class="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-lg flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-500 text-base line-through">{{ tarefa.descricao }}</h3>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-wrap">
                                 <p class="text-[10px] text-slate-400 uppercase font-black">{{ tarefa.acolhimento.paciente.nome_completo }}</p>
                                 <span class="text-[9px] bg-slate-200 text-slate-500 px-1.5 rounded font-bold">
                                     Resp: {{ tarefa.acolhimento.agente.nome if tarefa.acolhimento.agente else 'Sist.' }}
@@ -90,7 +99,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-xs font-bold text-slate-400 italic">Relatório Enviado</div>
+                    <div class="text-xs font-bold text-slate-400 italic status-concluida">Relatório Enviado</div>
                 </div>
                 {% endfor %}
             </div>
@@ -99,4 +108,183 @@
 
     </div>
 </div>
+
+<style>
+/* ═══════════════════════════════════════════
+   TABLET (768px – 1023px)
+   ═══════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .header-tarefas {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .header-tarefas h1 {
+        font-size: 1.6rem;
+    }
+
+    .container-tarefas {
+        padding: 1.5rem;
+    }
+
+    /* Card: empilha left/right verticalmente */
+    .card-tarefa {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1.25rem;
+    }
+
+    .card-left {
+        width: 100%;
+    }
+
+    .card-right {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .btn-executar {
+        width: 100%;
+        text-align: center;
+        margin-top: 0.25rem;
+    }
+
+    /* Tarefas concluídas */
+    .card-concluida {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+    }
+
+    .status-concluida {
+        align-self: flex-end;
+    }
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE (até 767px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 767px) {
+    .header-tarefas {
+        padding: 1rem 1rem;
+        position: sticky;
+        top: 0;
+    }
+
+    .header-tarefas h1 {
+        font-size: 1.35rem;
+    }
+
+    .header-tarefas p {
+        font-size: 0.8125rem;
+        margin-top: 0.25rem;
+    }
+
+    .container-tarefas {
+        padding: 1rem 0.75rem;
+    }
+
+    /* Card pendente: layout vertical */
+    .card-tarefa {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 1.25rem;
+    }
+
+    .card-left {
+        width: 100%;
+        gap: 0.875rem;
+    }
+
+    /* Avatar menor no mobile */
+    .card-left .w-12 {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .card-info h3 {
+        font-size: 0.9375rem;
+    }
+
+    .card-info p {
+        font-size: 0.75rem;
+    }
+
+    /* Metadados: linha horizontal com wrap */
+    .card-right {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+    }
+
+    .meta-item {
+        text-align: left;
+        min-width: 70px;
+    }
+
+    /* Botão ocupa toda a largura */
+    .btn-executar {
+        width: 100%;
+        text-align: center;
+        padding: 0.75rem 1rem;
+        border-radius: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Card concluída */
+    .card-concluida {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.625rem;
+        padding: 0.875rem 1rem;
+        border-radius: 1.25rem;
+    }
+
+    .card-concluida .card-left {
+        gap: 0.75rem;
+    }
+
+    .card-concluida .w-10 {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.625rem;
+    }
+
+    .status-concluida {
+        align-self: flex-start;
+        padding-left: 2.75rem; /* alinha com o texto, após o avatar */
+    }
+}
+
+/* ═══════════════════════════════════════════
+   TELAS MUITO PEQUENAS (até 360px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 360px) {
+    .container-tarefas {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .card-tarefa,
+    .card-concluida {
+        padding: 0.875rem 0.75rem;
+    }
+
+    .card-right {
+        gap: 0.375rem 0.75rem;
+    }
+
+    .meta-item {
+        min-width: 60px;
+    }
+}
+</style>
 {% endblock %}

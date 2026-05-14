@@ -3,81 +3,88 @@
 {% block title %}Acolhimentos | Elo Workbench{% endblock %}
 
 {% block content %}
-<header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-10 py-8 sticky top-0 z-10 flex items-center justify-between">
+<header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-6 py-6 md:px-10 md:py-8 sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
     <div>
-        <h1 class="text-3xl font-black text-slate-950 tracking-tighter">Acolhimentos</h1>
-        <p class="text-base text-slate-600 mt-1.5">Gestão de leads e fluxo de conversão em tempo real.</p>
+        <h1 class="text-2xl md:text-3xl font-black text-slate-950 tracking-tighter">Acolhimentos</h1>
+        <p class="text-sm md:text-base text-slate-600 mt-1 md:mt-1.5">Gestão de leads e fluxo de conversão em tempo real.</p>
     </div>
-    <button @click="openModal = true" class="bg-elo-navy text-white px-8 py-3.5 rounded-2xl font-black shadow-lg shadow-elo-navy/20 hover:bg-elo-blue transition-all active:scale-95 uppercase text-sm tracking-tight">
+    <button @click="openModal = true"
+            class="w-full md:w-auto bg-elo-navy text-white px-8 py-3.5 rounded-xl md:rounded-2xl font-black shadow-lg shadow-elo-navy/20 hover:bg-elo-blue transition-all active:scale-95 uppercase text-sm tracking-tight text-center">
         + Novo Acolhimento
     </button>
 </header>
 
-<div class="p-10">
+<div class="p-4 md:p-10">
     <div class="grid gap-8">
-        
+
         <div class="space-y-4">
             <div class="flex items-center gap-3 mb-2 px-2">
                 <span class="w-3 h-3 bg-elo-blue rounded-full"></span>
                 <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Leads em Atendimento</h2>
             </div>
 
-            <div class="grid gap-6">
+            <div class="grid gap-4 md:gap-6">
                 {% for ac in acolhimentos %}
-                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition-all group">
-                    
-                    <div class="flex items-center gap-6">
-                        <div class="w-14 h-14 bg-elo-light rounded-2xl flex items-center justify-center text-elo-navy font-black text-2xl uppercase transition-transform group-hover:scale-105">
+                <div class="card-acolhimento bg-white p-5 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:shadow-md transition-all group">
+
+                    {# Lado esquerdo: avatar + nome + status #}
+                    <div class="flex items-center gap-4 md:gap-6">
+                        <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 bg-elo-light rounded-xl md:rounded-2xl flex items-center justify-center text-elo-navy font-black text-xl md:text-2xl uppercase transition-transform group-hover:scale-105">
                             {{ ac.paciente.nome_completo[0] if ac.paciente else '?' }}
                         </div>
-                        <div>
-                            <h3 class="font-black text-slate-900 text-xl leading-tight tracking-tighter">
+                        <div class="min-w-0">
+                            <h3 class="font-black text-slate-900 text-lg md:text-xl leading-tight tracking-tighter truncate">
                                 {{ ac.paciente.nome_completo }}
                             </h3>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p class="text-sm text-slate-500">Família: <span class="font-semibold text-slate-700">{{ ac.nome_familiar }}</span></p>
-                                <span class="text-slate-300">|</span>
-                                <p class="text-sm text-slate-500">Status: <span class="text-xs font-black text-elo-blue uppercase">{{ ac.status }}</span></p>
+                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+                                <p class="text-xs md:text-sm text-slate-500">Família: <span class="font-semibold text-slate-700">{{ ac.nome_familiar }}</span></p>
+                                <span class="text-slate-300 hidden md:block">|</span>
+                                <p class="text-xs md:text-sm text-slate-500">Status: <span class="text-[10px] md:text-xs font-black text-elo-blue uppercase">{{ ac.status }}</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-10">
-                        
-                        <div class="text-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proprietário</p>
-                            <div class="flex items-center justify-center gap-2">
-                                <div class="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center">
-                                    <i class="fa-solid fa-user text-[8px] text-slate-400"></i>
+                    {# Lado direito: metadados + botão #}
+                    <div class="card-direito flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto border-t border-slate-100 pt-4 lg:border-t-0 lg:pt-0">
+
+                        {# Metadados em linha #}
+                        <div class="meta-row flex flex-row items-center gap-0 flex-1 divide-x divide-slate-100">
+                            <div class="meta-item flex-1 px-3 first:pl-0">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proprietário</p>
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-user text-[8px] text-slate-400"></i>
+                                    </div>
+                                    <span class="text-[10px] md:text-xs font-bold text-slate-700 truncate">
+                                        {{ ac.agente.nome if ac.agente else 'Sistema' }}
+                                    </span>
                                 </div>
-                                <span class="text-xs font-bold text-slate-700">
-                                    {{ ac.agente.nome if ac.agente else 'Sistema' }}
+                            </div>
+
+                            <div class="meta-item flex-1 px-3 text-center">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Urgência</p>
+                                <span class="text-[10px] md:text-xs font-bold {% if ac.urgencia == 'Crítica' %} text-red-600 {% elif ac.urgencia == 'Alta' %} text-orange-500 {% else %} text-slate-600 {% endif %}">
+                                    ● {{ ac.urgencia }}
+                                </span>
+                            </div>
+
+                            <div class="meta-item flex-1 px-3 text-right lg:text-center">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Entrada</p>
+                                <span class="text-[10px] md:text-xs font-bold text-slate-700">
+                                    {{ ac.data_inicio.strftime('%d/%m/%Y') if ac.data_inicio else '--/--/----' }}
                                 </span>
                             </div>
                         </div>
 
-                        <div class="text-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Urgência</p>
-                            <span class="text-xs font-bold {% if ac.urgencia == 'Crítica' %} text-red-600 {% elif ac.urgencia == 'Alta' %} text-orange-500 {% else %} text-slate-600 {% endif %}">
-                                ● {{ ac.urgencia }}
-                            </span>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Entrada</p>
-                            <span class="text-xs font-bold text-slate-700">
-                                {{ ac.data_inicio.strftime('%d/%m/%Y') if ac.data_inicio else '--/--/----' }}
-                            </span>
-                        </div>
-
-                        <a href="/workbench/acolhimento/{{ ac.id }}" 
-                           class="bg-slate-900 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-tighter hover:bg-elo-blue transition shadow-lg shadow-slate-900/10">
+                        {# Botão #}
+                        <a href="/workbench/acolhimento/{{ ac.id }}"
+                           class="btn-dossie shrink-0 text-center bg-slate-900 text-white px-6 md:px-8 py-3 rounded-xl font-black text-xs uppercase tracking-tighter hover:bg-elo-blue transition shadow-lg shadow-slate-900/10">
                             Ver Dossiê
                         </a>
                     </div>
                 </div>
                 {% else %}
-                <div class="text-center py-20 bg-white border border-dashed border-slate-200 rounded-[2rem] text-slate-400 font-bold italic">
+                <div class="text-center py-12 md:py-20 bg-white border border-dashed border-slate-200 rounded-[1.5rem] md:rounded-[2rem] text-slate-400 font-bold italic px-4">
                     Nenhum acolhimento encontrado na base.
                 </div>
                 {% endfor %}
@@ -86,4 +93,92 @@
 
     </div>
 </div>
+
+<style>
+    /* ═══════════════════════════════════════════
+       MOBILE (até 767px)
+       ═══════════════════════════════════════════ */
+    @media (max-width: 767px) {
+
+        /* Metadados: 3 itens em linha com divisor, sem quebrar */
+        .meta-row {
+            width: 100%;
+        }
+
+        .meta-item {
+            /* itens iguais e compactos */
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        /* Botão "Ver Dossiê" ocupa largura total */
+        .btn-dossie {
+            width: 100%;
+            display: block;
+        }
+
+        /* Remove gap excessivo no card */
+        .card-acolhimento {
+            gap: 0.875rem;
+        }
+
+        /* Lado direito sem border-top gap grande */
+        .card-direito {
+            gap: 0.75rem;
+        }
+    }
+
+    /* ═══════════════════════════════════════════
+       TABLET (768px – 1023px)
+       ═══════════════════════════════════════════ */
+    @media (min-width: 768px) and (max-width: 1023px) {
+
+        /* Card ainda em coluna (lg não ativou), mas visual mais organizado */
+        .card-acolhimento {
+            gap: 1rem;
+        }
+
+        /* Lado direito: metadados + botão em linha */
+        .card-direito {
+            flex-direction: row;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 1rem;
+        }
+
+        /* Botão tamanho fixo no tablet */
+        .btn-dossie {
+            width: auto;
+            white-space: nowrap;
+        }
+    }
+
+    /* ═══════════════════════════════════════════
+       DESKTOP GRANDE (1280px+)
+       card fica horizontal — ajuste fino
+       ═══════════════════════════════════════════ */
+    @media (min-width: 1024px) {
+        .card-direito {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .meta-row {
+            gap: 0;
+        }
+
+        .meta-item {
+            padding: 0 1.5rem;
+        }
+
+        .meta-item:first-child {
+            padding-left: 0;
+        }
+
+        .btn-dossie {
+            white-space: nowrap;
+        }
+    }
+</style>
+
 {% endblock %}

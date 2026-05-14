@@ -1,48 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; line-height: 1.6; }
-        .container { max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-        .header { background-color: #0f172a; padding: 40px; text-align: center; }
-        .logo { background-color: #2563eb; color: white; width: 50px; height: 50px; line-height: 50px; border-radius: 12px; display: inline-block; font-weight: 900; font-style: italic; font-size: 24px; margin-bottom: 20px; }
-        .content { padding: 40px; background-color: #ffffff; }
-        .credentials { background-color: #f8fafc; border-radius: 12px; padding: 25px; margin: 25px 0; border: 1px solid #e2e8f0; }
-        .credential-item { margin-bottom: 10px; font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .value { color: #0f172a; font-size: 18px; font-weight: 800; display: block; }
-        .footer { background-color: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
-        .button { background-color: #2563eb; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; display: inline-block; font-weight: bold; margin-top: 20px; }
+        /* Resets básicos para garantir que o e-mail não quebre no Outlook ou Apple Mail */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        
+        /* Tradução do Tailwind para CSS Puro */
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background-color: #f8fafc; /* bg-slate-50 */
+            color: #0f172a; /* text-slate-900 */
+            margin: 0; 
+            padding: 40px 20px; 
+            line-height: 1.6; 
+        }
+        
+        /* Container Principal (o "Card" do e-mail) */
+        .wrapper { 
+            width: 100%; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            border-radius: 24px; /* rounded-3xl */
+            overflow: hidden; 
+            border: 1px solid #e2e8f0; /* border-slate-200 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Cabeçalho Limpo */
+        .header { 
+            background-color: #ffffff; 
+            padding: 40px 40px 20px 40px; 
+            text-align: center; 
+        }
+        
+        /* A Imagem do Logo */
+        .logo { 
+            width: auto; 
+            height: 60px; /* Ajuste a altura conforme necessário */
+            max-width: 100%; 
+        }
+        
+        .content { padding: 10px 40px 40px 40px; }
+        
+        h2 { 
+            margin-top: 0; 
+            font-size: 24px; 
+            font-weight: 900; /* font-black */
+            letter-spacing: -0.5px; /* tracking-tight */
+            color: #0f172a; 
+            text-align: center;
+        }
+        
+        p { 
+            font-size: 15px; 
+            color: #475569; /* text-slate-600 */
+            margin-bottom: 24px; 
+            text-align: center;
+        }
+        
+        /* Bloco de Credenciais (Mesmo estilo das estatísticas do Dashboard) */
+        .credentials { 
+            background-color: #f8fafc; /* bg-slate-50 */
+            border: 1px solid #e2e8f0; /* border-slate-200 */
+            border-radius: 16px; /* rounded-2xl */
+            padding: 30px; 
+            margin: 30px 0; 
+            text-align: center; 
+        }
+        
+        .credential-item { 
+            font-size: 10px; /* text-[10px] */
+            color: #94a3b8; /* text-slate-400 */
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; /* tracking-widest */
+            margin-bottom: 6px; 
+        }
+        
+        .value { 
+            color: #2563eb; /* text-elo-blue */
+            font-size: 20px; 
+            font-weight: 900; 
+            letter-spacing: -0.5px; 
+            margin-bottom: 20px; 
+        }
+        
+        .value:last-child { margin-bottom: 0; }
+        
+        /* Box de Aviso de Segurança */
+        .security-note { 
+            font-size: 12px; 
+            color: #64748b; 
+            background-color: #ffffff; 
+            padding: 16px; 
+            border-radius: 12px; 
+            margin-bottom: 30px; 
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #0f172a; /* Detalhe em elo-navy */
+            text-align: left; 
+        }
+        
+        .button-container { text-align: center; margin-top: 30px; }
+        
+        /* Botão Principal */
+        .button { 
+            background-color: #0f172a; /* bg-elo-navy */
+            color: #ffffff; 
+            padding: 16px 32px; 
+            border-radius: 12px; /* rounded-xl */
+            text-decoration: none; 
+            display: inline-block; 
+            font-weight: 900; 
+            font-size: 13px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        
+        /* Rodapé */
+        .footer { 
+            background-color: #f8fafc; 
+            padding: 30px 40px; 
+            text-align: center; 
+            border-top: 1px solid #e2e8f0; 
+        }
+        
+        .footer p { 
+            font-size: 10px; 
+            color: #94a3b8; 
+            font-weight: 900; 
+            margin: 0; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="wrapper">
+        
         <div class="header">
-            <h1 style="color: white; margin: 0; letter-spacing: -1px;">Elo <span style="color: #3b82f6;">Reencontro/span></h1>
+            <img src="https://eloreencontro.com.br/static/logo.png" alt="Elo Reencontro" class="logo">
         </div>
+        
         <div class="content">
-            <h2 style="margin-top: 0;">Bem-vindo(a), {{ nome }}!</h2>
+            <h2>Bem-vindo(a), {{ nome }}!</h2>
             <p>O teu acesso ao ecossistema de gestão da Elo foi criado. A partir de agora, tens as ferramentas necessárias para gerir os teus acolhimentos com máxima performance.</p>
             
             <div class="credentials">
                 <div class="credential-item">ID de Acesso</div>
                 <div class="value">{{ user_key }}</div>
                 
-                <div style="height: 20px;"></div>
-                
                 <div class="credential-item">Senha Temporária</div>
                 <div class="value">{{ senha_temporaria }}</div>
             </div>
 
-            <p style="font-size: 14px; color: #64748b;"><strong>Nota de Segurança:</strong> Ao fazeres o primeiro login, o sistema enviará um código de verificação para este e-mail e solicitará que definas uma senha permanente.</p>
+            <div class="security-note">
+                <strong style="color: #0f172a;">Nota de Segurança:</strong> Ao fazeres o primeiro login, o sistema enviará um código de verificação para este e-mail e solicitará que definas uma senha permanente.
+            </div>
             
-            <center>
-                <a href="https://teu-dominio.com/login" class="button">Aceder ao Painel</a>
-            </center>
+            <div class="button-container">
+                <a href="https://eloreencontro.com.br/workbench" class="button">Aceder ao Workbench</a>
+            </div>
         </div>
+        
         <div class="footer">
-            &copy; 2024 Elo Reencontro - Inteligência em Acolhimento
+            <p>&copy; 2026 Elo Reencontro - Inteligência em Acolhimento</p>
         </div>
+        
     </div>
 </body>
 </html>
