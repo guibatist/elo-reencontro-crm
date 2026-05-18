@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash, make_response, send_from_directory
+from flask import Flask, render_template, redirect, url_for, request, flash, make_response, send_from_directory, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 import random
 import string
 from flask_mail import Mail, Message
+from pprt import gerar_apresentacao_elo
 
 load_dotenv()
 
@@ -42,7 +43,6 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Configuração (Adicione no topo do app.py)
-app.config['UPLOAD_FOLDER'] = 'uploads/anexos'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
@@ -70,6 +70,8 @@ class Usuario(UserMixin, db.Model):
     precisa_mudar_senha = db.Column(db.Boolean, default=True) 
     codigo_verificacao = db.Column(db.String(6))
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
+    tarefas = db.relationship('Tarefa', back_populates='usuario', cascade="all, delete-orphan", lazy=True)
+    chamados = db.relationship('Chamado', back_populates='usuario', cascade="all, delete-orphan", lazy=True)
 
     def gerar_username(self):
         # Transforma "João" e "Almeida" em "joao.almeida"
@@ -140,6 +142,7 @@ class Tarefa(db.Model):
     prioridade = db.Column(db.String(20), default='Média')
     status = db.Column(db.String(20), default='Pendente')
     relatorio = db.Column(db.Text) 
+    usuario = db.relationship('Usuario', back_populates='tarefas')
 
 class Atividade(db.Model):
     __tablename__ = 'atividades'
@@ -169,7 +172,7 @@ class Chamado(db.Model):
     status = db.Column(db.String(20), default='Aberto') # Aberto, Em Análise, Resolvido
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
     
-    usuario = db.relationship('Usuario', backref='chamados')
+    usuario = db.relationship('Usuario', back_populates='chamados')
 
 class Anexo(db.Model):
     __tablename__ = 'anexos' # Nome da tabela no banco
@@ -716,17 +719,30 @@ def novo_chamado():
     
     if arquivo and arquivo.filename != '':
         nome_arquivo = secure_filename(f"{uuid.uuid4().hex[:8]}_{arquivo.filename}")
+        # Garante o salvamento usando o caminho absoluto configurado
         arquivo.save(os.path.join(app.config['UPLOAD_FOLDER'], nome_arquivo))
 
+    # Forçamos o ID do usuário logado de forma direta e explícita no construtor
+    usuario_atual_id = int(current_user.id)
+
     novo = Chamado(
-        usuario_id = current_user.id,
+        usuario_id = usuario_atual_id,
         tipo = request.form.get('tipo'),
         assunto = request.form.get('assunto'),
         descricao = request.form.get('descricao'),
-        anexo = nome_arquivo
+        anexo = nome_arquivo,
+        status = 'Aberto'
     )
-    db.session.add(novo)
-    db.session.commit()
+    
+    try:
+        db.session.add(novo)
+        db.session.commit()
+        flash("Chamado aberto com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao salvar chamado: {e}")
+        flash("Erro interno ao processar o chamado no banco.", "error")
+        
     return redirect(url_for('chamados'))
 
 # --- ROTA DE CONFIGURAÇÕES ---
@@ -786,27 +802,68 @@ def editar_usuario(id):
     if current_user.role != 'admin': return "Acesso Negado", 403
     
     user = db.session.get(Usuario, id)
+    if not user:
+        flash("Usuário não encontrado.", "error")
+        return redirect(url_for('configuracoes'))
+
     user.nome = request.form.get('nome')
+    user.sobrenome = request.form.get('sobrenome') # Adicionado para ficar completo
     user.email = request.form.get('email')
+    user.role = request.form.get('role', user.role)
     
-    # Lógica do Toggle Ativo/Inativo (Checkbox HTML)
+    # Se o checkbox 'is_active' vier no form, ativa. Se não vier, desativa.
     user.is_active = 'is_active' in request.form
     
     db.session.commit()
-    flash("Alterações salvas com sucesso!", "success")
+    flash(f"Usuário {user.nome} atualizado com sucesso!", "success")
     return redirect(url_for('configuracoes'))
 
 # Rota para Bloquear/Editar (Apenas Admin)
 @app.route('/workbench/configuracoes/usuario/<int:id>/status', methods=['POST'])
 @login_required
 def alterar_status_usuario(id):
-    if current_user.role != 'admin':
-        return "Acesso negado", 403
+    if current_user.role != 'admin': return "Acesso negado", 403
+    
+    # Trava de segurança: O Admin não pode desativar a si mesmo sem querer
+    if current_user.id == id:
+        flash("Você não pode desativar sua própria conta.", "error")
+        return redirect(url_for('configuracoes'))
     
     user = db.session.get(Usuario, id)
-    # Lógica simples: se você tiver uma coluna 'ativo' no banco:
-    # user.ativo = not user.ativo 
+    # Inverte o status atual (Se True vira False, se False vira True)
+    user.is_active = not user.is_active 
+    
     db.session.commit()
+    
+    status = "Ativado" if user.is_active else "Desativado"
+    flash(f"Usuário {user.nome} {status} com sucesso!", "success")
+    return redirect(url_for('configuracoes'))
+
+@app.route('/api/usuarios/<int:id>/excluir', methods=['POST'])
+@login_required
+def excluir_usuario(id):
+    if current_user.role != 'admin': return "Acesso Negado", 403
+    
+    if current_user.id == id:
+        flash("Você não pode excluir sua própria conta.", "error")
+        return redirect(url_for('configuracoes'))
+    
+    user = db.session.get(Usuario, id)
+    if user:
+        # 1. Buscamos se esse usuário que vai morrer deixou algum chamado aberto
+        chamados_dele = Chamado.query.filter_by(usuario_id=id).all()
+        
+        # 2. Transferimos os chamados dele para o Admin logado (você)
+        for chamado in chamados_dele:
+            chamado.usuario_id = current_user.id
+        
+        # 3. Agora que nenhum chamado vai ficar órfão, o banco deixa apagar!
+        db.session.delete(user)
+        db.session.commit()
+        flash(f"Usuário excluído com sucesso! Os chamados dele foram transferidos para você.", "success")
+    else:
+        flash("Usuário não encontrado.", "error")
+        
     return redirect(url_for('configuracoes'))
 
 @app.route('/verificar-2fa', methods=['GET', 'POST'])
@@ -1005,6 +1062,53 @@ def sponsors():
     # Se for GET (apenas acessando a página), busca a lista no banco e renderiza a tela
     lista_sponsors = obter_sponsors()
     return render_template('crm/sponsors.html', sponsors=lista_sponsors)
+
+@app.route('/workbench/apresentador', methods=['GET', 'POST'])
+@login_required
+def apresentador():
+    if request.method == 'POST':
+        # Captura os dados textuais do form
+        dados = {
+            'nome_paciente': request.form.get('nome_paciente', '').strip(),
+            'cidade': request.form.get('cidade', '').strip(),
+            'nome_clinica': request.form.get('nome_clinica', '').strip()
+        }
+        
+        # Nome customizado do arquivo (Garante terminação correta)
+        nome_arquivo = request.form.get('nome_arquivo', 'Apresentacao_Elo').strip()
+        if not nome_arquivo.endswith('.pptx'):
+            nome_arquivo += '.pptx'
+
+        # Captura e prepara os streams de arquivos anexados (Logos e Fotos)
+        arquivos = {}
+        campos_arquivo = ['logo_clinica', 'foto_estrutura', 'foto_extra_1', 'foto_extra_2', 'foto_extra_3', 'foto_extra_4', 'foto_extra_5']
+        
+        for campo in campos_arquivo:
+            f = request.files.get(campo)
+            if f and f.filename != '':
+                # Converte o arquivo em um buffer binário em memória pro python-pptx ler
+                img_stream = io.BytesIO(f.read())
+                arquivos[campo] = img_stream
+            else:
+                arquivos[campo] = None
+
+        # Roda a engine de montagem do PowerPoint
+        prs = gerar_apresentacao_elo(dados, arquivos)
+        
+        # Salva o arquivo final diretamente em um buffer de memória
+        buffer_saida = io.BytesIO()
+        prs.save(buffer_saida)
+        buffer_saida.seek(0)
+        
+        # Devolve o arquivo limpo para download instantâneo
+        return send_file(
+            buffer_saida,
+            as_attachment=True,
+            download_name=nome_arquivo,
+            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        )
+
+    return render_template('crm/apresentacao.html')
 
 @app.route('/logout')
 def logout():

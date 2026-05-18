@@ -79,27 +79,36 @@
                     <tbody class="divide-y divide-slate-100">
                         {% for u in usuarios %}
                         <tr class="group hover:bg-slate-50/50 transition-all">
+                            
+                            {# Formulário oculto central que conecta os campos de edição deste usuário #}
+                            <form id="form-edit-{{ u.id }}" action="/api/usuarios/{{ u.id }}/editar" method="POST">
+                                {# Mantém os dados antigos seguros caso não sejam editados na tabela #}
+                                <input type="hidden" name="sobrenome" value="{{ u.sobrenome }}">
+                                {% if u.is_active %}<input type="hidden" name="is_active" value="on">{% endif %}
+                            </form>
+
                             <td class="px-8 py-6">
-                                <form action="/api/usuarios/{{ u.id }}/editar" method="POST" class="flex items-center gap-4">
+                                <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
                                         {{ u.nome[0] }}
                                     </div>
-                                    <input type="text" name="nome" value="{{ u.nome }}"
+                                    <input type="text" name="nome" value="{{ u.nome }}" form="form-edit-{{ u.id }}"
                                            class="bg-transparent border-none font-bold text-slate-900 focus:ring-0 p-0 w-32">
-                                </form>
+                                </div>
                             </td>
                             <td class="px-8 py-6">
-                                <form action="/api/usuarios/{{ u.id }}/editar" method="POST" class="flex flex-col">
-                                    <input type="email" name="email" value="{{ u.email }}"
+                                <div class="flex flex-col">
+                                    <input type="email" name="email" value="{{ u.email }}" form="form-edit-{{ u.id }}"
                                            class="bg-transparent border-none font-medium text-slate-500 focus:ring-0 p-0 text-sm">
                                     <span class="text-[9px] font-black text-slate-300 uppercase tracking-tighter">Username: {{ u.user_key }}</span>
-                                    <button type="submit" class="hidden group-hover:block text-[9px] font-black text-blue-600 uppercase mt-1 text-left">Salvar Alterações</button>
-                                </form>
+                                    <button type="submit" form="form-edit-{{ u.id }}" class="hidden group-hover:block text-[9px] font-black text-blue-600 uppercase mt-1 text-left">Salvar Alterações</button>
+                                </div>
                             </td>
                             <td class="px-8 py-6">
-                                <form action="/api/usuarios/{{ u.id }}/editar" method="POST">
+                                {# Formulário exclusivo para ligar/desligar usuário #}
+                                <form action="/workbench/configuracoes/usuario/{{ u.id }}/status" method="POST">
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="is_active" class="sr-only peer"
+                                        <input type="checkbox" class="sr-only peer"
                                                {% if u.is_active %}checked{% endif %} onchange="this.form.submit()">
                                         <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                         <span class="ml-3 text-[10px] font-black uppercase {% if u.is_active %}text-blue-600{% else %}text-slate-400{% endif %}">
@@ -111,10 +120,14 @@
                             <td class="px-8 py-6 text-right">
                                 <div class="flex justify-end gap-2">
                                     <form action="/api/usuarios/{{ u.id }}/reset-senha" method="POST">
-                                        <button type="submit"
-                                                class="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-orange-100 hover:text-orange-600 transition-all"
-                                                title="Resetar Senha">
+                                        <button type="submit" class="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-orange-100 hover:text-orange-600 transition-all" title="Resetar Senha">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                                        </button>
+                                    </form>
+                                    
+                                    <form action="/api/usuarios/{{ u.id }}/excluir" method="POST" onsubmit="return confirm('ATENÇÃO: Tem certeza que deseja EXCLUIR este usuário permanentemente?');">
+                                        <button type="submit" class="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-red-100 hover:text-red-600 transition-all" title="Excluir Usuário">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </form>
                                 </div>
@@ -130,36 +143,42 @@
                 {% for u in usuarios %}
                 <div class="p-5 space-y-4">
 
+                    {# Formulário oculto central para mobile #}
+                    <form id="form-edit-mob-{{ u.id }}" action="/api/usuarios/{{ u.id }}/editar" method="POST">
+                        <input type="hidden" name="sobrenome" value="{{ u.sobrenome }}">
+                        {% if u.is_active %}<input type="hidden" name="is_active" value="on">{% endif %}
+                    </form>
+
                     {# Linha 1: avatar + nome + username #}
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-400 shrink-0">
                             {{ u.nome[0] }}
                         </div>
-                        <div class="min-w-0">
-                            <form action="/api/usuarios/{{ u.id }}/editar" method="POST">
-                                <input type="text" name="nome" value="{{ u.nome }}"
-                                       class="bg-transparent border-none font-bold text-slate-900 focus:ring-0 p-0 w-full text-base">
-                                <p class="text-[9px] font-black text-slate-300 uppercase tracking-tighter mt-0.5">{{ u.user_key }}</p>
-                            </form>
+                        <div class="min-w-0 w-full">
+                            <input type="text" name="nome" value="{{ u.nome }}" form="form-edit-mob-{{ u.id }}"
+                                   class="bg-transparent border-none font-bold text-slate-900 focus:ring-0 p-0 w-full text-base">
+                            <p class="text-[9px] font-black text-slate-300 uppercase tracking-tighter mt-0.5">{{ u.user_key }}</p>
                         </div>
                     </div>
 
                     {# Linha 2: email #}
-                    <form action="/api/usuarios/{{ u.id }}/editar" method="POST" class="space-y-2">
+                    <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">E-mail</label>
-                        <input type="email" name="email" value="{{ u.email }}"
+                        <input type="email" name="email" value="{{ u.email }}" form="form-edit-mob-{{ u.id }}"
                                class="w-full bg-slate-50 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 border border-slate-100 focus:ring-2 focus:ring-blue-100 outline-none">
-                        <button type="submit"
+                        <button type="submit" form="form-edit-mob-{{ u.id }}"
                                 class="w-full text-[10px] font-black text-blue-600 uppercase bg-blue-50 py-2 rounded-xl hover:bg-blue-100 transition">
                             Salvar Alterações
                         </button>
-                    </form>
+                    </div>
 
-                    {# Linha 3: status + reset #}
-                    <div class="flex items-center justify-between pt-1">
-                        <form action="/api/usuarios/{{ u.id }}/editar" method="POST">
+                    {# Linha 3: status + reset + excluir #}
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-50 gap-2 flex-wrap">
+                        
+                        {# Formulário de Ligar/Desligar (Mobile) #}
+                        <form action="/workbench/configuracoes/usuario/{{ u.id }}/status" method="POST">
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="is_active" class="sr-only peer"
+                                <input type="checkbox" class="sr-only peer"
                                        {% if u.is_active %}checked{% endif %} onchange="this.form.submit()">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 <span class="ml-3 text-[10px] font-black uppercase {% if u.is_active %}text-blue-600{% else %}text-slate-400{% endif %}">
@@ -168,14 +187,22 @@
                             </label>
                         </form>
 
-                        <form action="/api/usuarios/{{ u.id }}/reset-senha" method="POST">
-                            <button type="submit"
-                                    class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-orange-100 hover:text-orange-600 transition text-[10px] font-black uppercase"
-                                    title="Resetar Senha">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                                Resetar Senha
-                            </button>
-                        </form>
+                        <div class="flex items-center gap-2">
+                            {# Resetar (Mobile) #}
+                            <form action="/api/usuarios/{{ u.id }}/reset-senha" method="POST">
+                                <button type="submit" class="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-orange-100 hover:text-orange-600 transition text-[10px] font-black uppercase" title="Resetar Senha">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                                    Reset
+                                </button>
+                            </form>
+                            
+                            {# Excluir (Mobile) #}
+                            <form action="/api/usuarios/{{ u.id }}/excluir" method="POST" onsubmit="return confirm('Deseja excluir permanentemente este usuário?');">
+                                <button type="submit" class="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-red-100 hover:text-red-600 transition text-[10px] font-black uppercase" title="Excluir Usuário">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -195,35 +222,19 @@
        ═══════════════════════════════════════════ */
     @media (min-width: 768px) and (max-width: 1023px) {
         .container-config { padding: 1.5rem; }
-
-        /* Tabela com scroll horizontal no tablet */
         .tabela-desktop { overflow-x: auto; }
-
-        .tabela-desktop table {
-            min-width: 640px;
-        }
-
+        .tabela-desktop table { min-width: 640px; }
         .tabela-desktop th,
-        .tabela-desktop td {
-            padding: 1rem 1.25rem;
-        }
+        .tabela-desktop td { padding: 1rem 1.25rem; }
     }
 
     /* ═══════════════════════════════════════════
        MOBILE (até 767px)
        ═══════════════════════════════════════════ */
     @media (max-width: 767px) {
-        /* Troca tabela por cards */
         .tabela-desktop { display: none !important; }
         .tabela-mobile  { display: block !important; }
-
-        /* Form novo consultor: 2 colunas no mobile (nome + sobrenome) */
-        /* já coberto pelo sm:grid-cols-2 do Tailwind */
-
-        /* Header: botão de reset full-width */
-        .header-config form {
-            width: 100%;
-        }
+        .header-config form { width: 100%; }
     }
 </style>
 
