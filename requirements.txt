@@ -8,3 +8,4 @@ openpyxl==3.1.5
 Flask-Mail==0.9.1
 pandas
 matplotlib
+python-pptx==0.6.23
