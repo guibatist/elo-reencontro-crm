@@ -1,6 +1,3 @@
-<!-- ═══════════════════════════════════════════════════════
-     MOBILE NAVBAR  (visível apenas em telas < 768px)
-═══════════════════════════════════════════════════════ -->
 <nav class="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200" x-data="{ mobileOpen: false }">
     <div class="h-16 flex items-center justify-between px-4">
         <span class="font-black text-xl text-slate-800 tracking-tighter">Elo Reencontro</span>
@@ -14,7 +11,6 @@
         </button>
     </div>
 
-    <!-- Drawer -->
     <div
         x-show="mobileOpen"
         x-transition:enter="transition ease-out duration-200"
@@ -32,11 +28,13 @@
             <p class="px-3 pb-1 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Main Menu</p>
 
             <template x-for="item in [
-                { name: 'Dashboard',    icon: 'fa-chart-pie',      url: '/workbench/dashboard' },
-                { name: 'Acolhimentos', icon: 'fa-address-book',   url: '/workbench/acolhimentos' },
-                { name: 'Tarefas',      icon: 'fa-list-check',     url: '/workbench/tarefas' },
-                { name: 'Relatórios',   icon: 'fa-file-contract',  url: '/workbench/relatorios' },
-                { name: 'Suporte',      icon: 'fa-headset',        url: '/workbench/chamados' }
+                { name: 'Dashboard',    icon: 'fa-chart-pie',         url: '/workbench/dashboard' },
+                { name: 'Acolhimentos', icon: 'fa-address-book',      url: '/workbench/acolhimentos' },
+                { name: 'Tarefas',      icon: 'fa-list-check',        url: '/workbench/tarefas' },
+                { name: 'Parceiros',    icon: 'fa-handshake',         url: '/sponsors' },
+                { name: 'Apresentação', icon: 'fa-file-powerpoint',   url: '/workbench/apresentador' },
+                { name: 'Relatórios',   icon: 'fa-file-contract',     url: '/workbench/relatorios' },
+                { name: 'Suporte',      icon: 'fa-headset',           url: '/workbench/chamados' }
             ]">
                 <a :href="item.url"
                    @click="mobileOpen = false"
@@ -74,18 +72,13 @@
     </div>
 </nav>
 
-<!-- Espaçador mobile: empurra o conteúdo abaixo da navbar fixa -->
 <div class="md:hidden h-16 flex-shrink-0"></div>
 
 
-<!-- ═══════════════════════════════════════════════════════
-     DESKTOP SIDEBAR  (visível apenas em telas ≥ 768px)
-═══════════════════════════════════════════════════════ -->
 <aside
     class="hidden md:flex h-screen flex-col sidebar-transition flex-shrink-0 bg-white border-r border-slate-200 relative z-40"
     :class="isCollapsed ? 'w-20' : 'w-72'"
 >
-    <!-- Header -->
     <div class="h-20 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0">
         <div x-show="!isCollapsed" x-transition.opacity class="overflow-hidden">
             <span class="font-black text-2xl text-slate-800 tracking-tighter whitespace-nowrap">Elo Reencontro</span>
@@ -99,18 +92,19 @@
         </button>
     </div>
 
-    <!-- Body -->
     <div class="flex-1 py-6 space-y-8 overflow-y-auto scroller-navy">
 
         <div class="space-y-1">
             <p x-show="!isCollapsed" x-cloak class="px-6 pb-1 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] whitespace-nowrap">Main Menu</p>
             <nav class="px-3 space-y-0.5">
                 <template x-for="item in [
-                    { name: 'Dashboard',    icon: 'fa-chart-pie',      url: '/workbench/dashboard' },
-                    { name: 'Acolhimentos', icon: 'fa-address-book',   url: '/workbench/acolhimentos' },
-                    { name: 'Tarefas',      icon: 'fa-list-check',     url: '/workbench/tarefas' },
-                    { name: 'Relatórios',   icon: 'fa-file-contract',  url: '/workbench/relatorios' },
-                    { name: 'Suporte',      icon: 'fa-headset',        url: '/workbench/chamados' }
+                    { name: 'Dashboard',    icon: 'fa-chart-pie',         url: '/workbench/dashboard' },
+                    { name: 'Acolhimentos', icon: 'fa-address-book',      url: '/workbench/acolhimentos' },
+                    { name: 'Tarefas',      icon: 'fa-list-check',        url: '/workbench/tarefas' },
+                    { name: 'Parceiros',    icon: 'fa-handshake',         url: '/sponsors' },
+                    { name: 'Apresentação', icon: 'fa-file-powerpoint',   url: '/workbench/apresentador' },
+                    { name: 'Relatórios',   icon: 'fa-file-contract',     url: '/workbench/relatorios' },
+                    { name: 'Suporte',      icon: 'fa-headset',           url: '/workbench/chamados' }
                 ]">
                     <a :href="item.url"
                        class="flex items-center gap-4 px-3 py-3.5 rounded-xl font-bold text-sm transition-all duration-200"
@@ -147,7 +141,6 @@
 
     </div>
 
-    <!-- Footer -->
     <div class="p-4 border-t border-slate-100 flex-shrink-0">
         <a href="/logout"
            class="flex items-center gap-4 px-3 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
