@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masterclass: O Cérebro Sequestrado | Elo Reencontro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#071022', // Azul quase preto
+                            blue: '#0B1B3D', // Seu azul profundo
+                            cream: '#FDFBF7', // Creme acadêmico
+                            gold: '#C5A880', // Ouro/Creme escuro para destaque
+                            green: '#10B981', // Verde conversão
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(253, 251, 247, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .pulse-btn {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        body { background-color: #071022; background-image: radial-gradient(circle at top right, #0B1B3D, #071022); }
+    </style>
+</head>
+<body class="text-brand-cream min-h-screen flex flex-col justify-center relative overflow-x-hidden">
+
+    <div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-brand-blue rounded-full blur-[120px] opacity-60 z-0"></div>
+
+    <div class="max-w-7xl mx-auto px-6 py-12 md:py-20 relative z-10 w-full flex flex-col lg:flex-row items-center gap-16 lg:gap-12">
+        
+        <div class="w-full lg:w-7/12 space-y-8">
+            
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="text-xs font-bold uppercase tracking-[0.2em] text-brand-cream">Masterclass Inédita e Gratuita</span>
+            </div>
+            
+            <h1 class="font-heading text-4xl md:text-5xl lg:text-[3.5rem] font-black leading-[1.1] tracking-tight">
+                Seu filho prometeu parar <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-yellow-200">e não conseguiu?</span>
+            </h1>
+            
+            <p class="text-lg md:text-2xl font-light text-slate-300 leading-snug max-w-2xl">
+                O vício destrói a capacidade biológica de escolha. Entenda a ciência do <strong class="text-white">"Cérebro Sequestrado"</strong> e saiba como resgatar o controle cognitivo antes que a crise se agrave.
+            </p>
+
+            <div class="flex items-center gap-6 p-1 border-l-4 border-brand-gold bg-white/5 rounded-r-2xl pr-6 mt-8 w-fit backdrop-blur-sm">
+                <img src="https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                     alt="Palestrante" 
+                     class="w-16 h-16 rounded-full object-cover border-2 border-brand-gold ml-4 shadow-lg shadow-black/50">
+                <div>
+                    <p class="text-xs font-bold text-brand-gold uppercase tracking-widest mb-1">Com Especialista Clínico</p>
+                    <p class="text-sm font-medium text-slate-300">Descubra por que as promessas falham e como a <br>desintoxicação de alto padrão realiza o reset biológico.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="w-full lg:w-5/12 max-w-md mx-auto lg:ml-auto">
+            <div class="glass-panel p-8 md:p-10 rounded-3xl shadow-2xl shadow-black/60 relative">
+                
+                <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest py-1.5 px-6 rounded-full shadow-lg whitespace-nowrap">
+                    🔥 Vagas Limitadas
+                </div>
+
+                <div class="text-center mb-8 pt-2">
+                    <h2 class="font-heading text-2xl font-black leading-tight text-brand-dark">
+                        Garanta sua vaga gratuita
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">Preencha abaixo para receber o link de acesso</p>
+                </div>
+
+                <form action="/palestra" method="POST" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Seu Nome</label>
+                        <input type="text" name="nome" required placeholder="Digite seu nome completo"
+                               class="w-full bg-white border border-slate-300 px-4 py-3.5 rounded-xl font-medium text-brand-dark focus:ring-2 focus:ring-brand-blue outline-none transition-all">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">WhatsApp (Com DDD)</label>
+                        <input type="tel" name="whatsapp" required placeholder="(11) 99999-9999"
+                               class="w-full bg-white border border-slate-300 px-4 py-3.5 rounded-xl font-medium text-brand-dark focus:ring-2 focus:ring-brand-blue outline-none transition-all">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Melhor E-mail</label>
+                        <input type="email" name="email" required placeholder="seu@melhoremail.com"
+                               class="w-full bg-white border border-slate-300 px-4 py-3.5 rounded-xl font-medium text-brand-dark focus:ring-2 focus:ring-brand-blue outline-none transition-all">
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit"
+                                class="pulse-btn w-full bg-brand-green text-white font-heading font-black py-5 rounded-xl hover:bg-emerald-600 transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-2">
+                            Quero Reservar Minha Vaga
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex justify-center items-center gap-2 pt-2 text-slate-400 text-[10px] font-medium">
+                        <i class="fa-solid fa-lock"></i>
+                        <p>Suas informações estão 100% seguras e em sigilo.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

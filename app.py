@@ -325,6 +325,42 @@ def adicionar_tarefa(id):
     db.session.commit()
     return redirect(url_for('ver_acolhimento', id=id))
 
+# --- ROTA DE REGISTRO DE NOTAS / ATIVIDADES NO ACOLHIMENTO ---
+@app.route('/api/acolhimento/<int:id>/nota', methods=['POST'])
+@login_required
+def adicionar_nota(id):
+    texto_anotacao = request.form.get('anotacao')
+    
+    # Trava de segurança para não salvar notas vazias
+    if not texto_anotacao or texto_anotacao.strip() == '':
+        flash("A anotação não pode estar vazia.", "error")
+        return redirect(request.referrer) # Volta para a página exata de onde veio
+    
+    # Cria a nova atividade (nota) vinculada ao Acolhimento e ao Consultor logado
+    nova_nota = Atividade(
+        acolhimento_id=id,
+        usuario_id=current_user.id,
+        anotacao=texto_anotacao
+    )
+    
+    # Busca o acolhimento para atualizar a data da "última atualização"
+    acolhimento = db.session.get(Acolhimento, id)
+    if acolhimento:
+        acolhimento.ultima_atualizacao = db.func.current_timestamp()
+    
+    try:
+        db.session.add(nova_nota)
+        db.session.commit()
+        flash("Nota registrada com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao salvar nota: {e}")
+        flash("Erro ao registrar a anotação no banco de dados.", "error")
+        
+    # O request.referrer é um truque mágico que recarrega a página atual 
+    # mantendo o usuário na tela do perfil do paciente/acolhimento
+    return redirect(url_for('ver_acolhimento', id=id))
+
 @app.route('/workbench/tarefa/<int:id>/concluir', methods=['GET', 'POST'])
 @login_required
 def concluir_tarefa(id):
@@ -1109,6 +1145,49 @@ def apresentador():
         )
 
     return render_template('crm/apresentacao.html')
+
+# ==========================================
+# FUNIL DE CAPTAÇÃO - PALESTRA GRATUITA
+# ==========================================
+
+@app.route('/palestra', methods=['GET', 'POST'])
+def palestra():
+    if request.method == 'POST':
+        nome = request.form.get('nome')
+        whatsapp = request.form.get('whatsapp')
+        email = request.form.get('email')
+        
+        # Disparo imediato do e-mail de notificação para a Elo Reencontro
+        try:
+            msg = Message(
+                subject=f"[NOVO LEAD PALESTRA] - {nome}",
+                recipients=['contato@eloreencontro.com.br']
+            )
+            msg.body = f"""
+Um novo Lead acabou de se inscrever para a Palestra Gratuita "O Cérebro Sequestrado".
+
+DADOS DO LEAD:
+----------------------------------------
+Nome: {nome}
+WhatsApp: {whatsapp}
+E-mail: {email}
+Data da Inscrição: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+----------------------------------------
+Sugerimos salvar este contato no CRM e acompanhar a presença no grupo VIP.
+"""
+            mail.send(msg)
+            print(f"Lead {nome} capturado e e-mail enviado com sucesso.")
+        except Exception as e:
+            print(f"Lead processado, mas falha ao enviar o e-mail: {e}")
+        
+        # Redirecionamento obrigatório para a Página de Obrigado (Etapa 2)
+        return redirect(url_for('palestra_obrigado'))
+        
+    return render_template('palestra.html')
+
+@app.route('/palestra/obrigado')
+def palestra_obrigado():
+    return render_template('palestra_obrigado.html')
 
 @app.route('/logout')
 def logout():

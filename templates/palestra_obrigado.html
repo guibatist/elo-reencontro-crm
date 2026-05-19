@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quase lá... | Elo Reencontro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#071022',
+                            blue: '#0B1B3D',
+                            cream: '#FDFBF7',
+                            gold: '#C5A880',
+                            green: '#25D366', // Verde Oficial WhatsApp
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .pulse-btn {
+            animation: pulse-wpp 2s infinite;
+        }
+        @keyframes pulse-wpp {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        body { background-color: #071022; background-image: radial-gradient(circle at top, #0B1B3D, #071022); }
+    </style>
+</head>
+<body class="text-brand-cream min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="max-w-3xl w-full text-center space-y-8 relative z-10">
+        
+        <div class="w-full max-w-md mx-auto space-y-2">
+            <div class="flex justify-between text-xs font-bold tracking-widest text-brand-gold uppercase">
+                <span>Passo 1 OK</span>
+                <span>Falta o Passo 2</span>
+            </div>
+            <div class="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-brand-gold w-[80%] rounded-full relative">
+                    <div class="absolute inset-0 bg-white/30 animate-[pulse_1s_ease-in-out_infinite]"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4 pt-4">
+            <h1 class="font-heading text-3xl md:text-5xl font-black leading-tight text-white uppercase">
+                ATENÇÃO: Inscrição quase concluída!
+            </h1>
+            <p class="text-lg md:text-xl text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto">
+                Para receber o link secreto da transmissão e garantir o <strong class="text-brand-gold">sigilo absoluto</strong> da sua família, você precisa entrar no nosso Grupo VIP.
+            </p>
+        </div>
+
+        <div class="bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-md max-w-xl mx-auto shadow-2xl">
+            
+            <a href="https://chat.whatsapp.com/COLOQUE_SEU_LINK_AQUI" target="_blank"
+               class="pulse-btn w-full block bg-brand-green text-white font-heading font-black py-6 rounded-2xl hover:bg-green-500 transition-all shadow-xl shadow-brand-green/20 uppercase tracking-widest text-sm md:text-base border-b-4 border-green-700 active:border-b-0 active:translate-y-1">
+                <i class="fa-brands fa-whatsapp text-2xl mr-2 align-middle"></i>
+                ENTRAR NO GRUPO VIP DA PALESTRA
+            </a>
+            
+            <p class="text-[11px] text-slate-400 mt-5 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                <i class="fa-solid fa-volume-xmark"></i> Grupo Silencioso. Só administradores postam.
+            </p>
+        </div>
+
+        <div class="mt-12 bg-gradient-to-r from-brand-blue to-[#0e214a] p-6 rounded-2xl border border-brand-blue text-left relative overflow-hidden max-w-2xl mx-auto shadow-lg">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-brand-gold"></div>
+            
+            <h3 class="text-brand-gold font-heading font-black text-sm uppercase tracking-widest mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-handshake-angle text-lg"></i> Corrente de Apoio Mútuo
+            </h3>
+            
+            <p class="text-sm text-slate-300 leading-relaxed mb-4 font-medium">
+                Quase todas as famílias sofrem esse inferno em silêncio por vergonha. Se você conhece alguma mãe ou parente que precisa ouvir isso, envie o link do site para ela.
+            </p>
+            
+            <div class="bg-black/30 p-4 rounded-xl flex items-center gap-4 border border-white/5">
+                <i class="fa-solid fa-gift text-brand-gold text-2xl"></i>
+                <p class="text-xs text-slate-300 font-medium leading-tight">
+                    <strong class="text-white uppercase tracking-wider block mb-1">Recompensa VIP:</strong> 
+                    Ao convidar 2 pessoas, você receberá no seu privado o nosso 
+                    <span class="text-brand-gold font-bold">Guia Clínico de Proteção Familiar (PDF)</span> 
+                    logo após a palestra.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
