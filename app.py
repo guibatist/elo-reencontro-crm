@@ -260,54 +260,70 @@ def ver_acolhimento(id):
 @app.route('/api/atualizar-acolhimento/<int:id>', methods=['POST'])
 @login_required
 def atualizar_acolhimento(id):
-    ac = Acolhimento.query.get_or_404(id)
-    
-    # 1. Atualização de Datas (Previsão de Internação e Cura)
-    # Usamos try/except ou verificação simples para não quebrar se a data vier vazia
-    prev_int = request.form.get('previsao_internacao')
-    if prev_int:
-        try:
+    # Usando o padrão novo do SQLAlchemy para evitar erros de query
+    ac = db.session.get(Acolhimento, id)
+    if not ac:
+        flash("Acolhimento não encontrado.", "error")
+        return redirect(url_for('dashboard')) # Redireciona para o painel se não achar
+
+    try:
+        # 1. Atualização de Datas (Com verificação se a string não está vazia)
+        prev_int = request.form.get('previsao_internacao')
+        if prev_int and prev_int.strip() != '':
             ac.previsao_internacao = datetime.strptime(prev_int, '%Y-%m-%d').date()
-        except ValueError:
-            pass # Formato inválido ou vazio
-    else:
-        ac.previsao_internacao = None
+        else:
+            ac.previsao_internacao = None
 
-    prev_cura = request.form.get('previsao_cura')
-    if prev_cura:
-        try:
+        prev_cura = request.form.get('previsao_cura')
+        if prev_cura and prev_cura.strip() != '':
             ac.previsao_cura = datetime.strptime(prev_cura, '%Y-%m-%d').date()
-        except ValueError:
-            pass
-    else:
-        ac.previsao_cura = None
+        else:
+            ac.previsao_cura = None
 
-    # 2. Dados da Oportunidade (Acolhimento)
-    ac.status = request.form.get('status', ac.status)
-    ac.urgencia = request.form.get('urgencia', ac.urgencia)
-    ac.tipo_internacao = request.form.get('tipo_internacao', ac.tipo_internacao)
-    ac.substancias_uso = request.form.get('substancias_uso', ac.substancias_uso)
-    ac.comorbidades = request.form.get('comorbidades', ac.comorbidades)
-    ac.investimento_estimado = request.form.get('investimento_estimado', ac.investimento_estimado)
+        # 2. Dados da Oportunidade
+        ac.status = request.form.get('status', ac.status)
+        ac.urgencia = request.form.get('urgencia', ac.urgencia)
+        ac.tipo_internacao = request.form.get('tipo_internacao', ac.tipo_internacao)
+        ac.substancias_uso = request.form.get('substancias_uso', ac.substancias_uso)
+        ac.comorbidades = request.form.get('comorbidades', ac.comorbidades)
+        ac.investimento_estimado = request.form.get('investimento_estimado', ac.investimento_estimado)
+        
+        # Carimba a última atualização
+        ac.ultima_atualizacao = db.func.current_timestamp()
 
-    # 3. Dados do Decisor (Relação entrelaçada)
-    if ac.decisor:
-        ac.decisor.nome_completo = request.form.get('decisor_nome', ac.decisor.nome_completo)
-        ac.decisor.whatsapp = request.form.get('decisor_whatsapp', ac.decisor.whatsapp)
-        ac.decisor.parentesco = request.form.get('decisor_parentesco', ac.decisor.parentesco)
-        ac.decisor.email = request.form.get('decisor_email', ac.decisor.email)
-        ac.decisor.cep = request.form.get('decisor_cep', ac.decisor.cep)
-        ac.decisor.endereco = request.form.get('decisor_endereco', ac.decisor.endereco)
+        # 3. Dados do Decisor
+        if ac.decisor:
+            # ATENÇÃO: Muitas vezes o modelo tem apenas "nome", e não "nome_completo"
+            if hasattr(ac.decisor, 'nome_completo'):
+                ac.decisor.nome_completo = request.form.get('decisor_nome', ac.decisor.nome_completo)
+            elif hasattr(ac.decisor, 'nome'):
+                ac.decisor.nome = request.form.get('decisor_nome', ac.decisor.nome)
+                
+            ac.decisor.whatsapp = request.form.get('decisor_whatsapp', ac.decisor.whatsapp)
+            ac.decisor.parentesco = request.form.get('decisor_parentesco', ac.decisor.parentesco)
+            ac.decisor.email = request.form.get('decisor_email', ac.decisor.email)
+            ac.decisor.cep = request.form.get('decisor_cep', ac.decisor.cep)
+            ac.decisor.endereco = request.form.get('decisor_endereco', ac.decisor.endereco)
 
-    # 4. Dados do Paciente (Relação entrelaçada)
-    if ac.paciente:
-        ac.paciente.nome_completo = request.form.get('paciente_nome', ac.paciente.nome_completo)
-    
-    # Salva tudo no Neon
-    db.session.commit()
-    
-    flash('Dossiê atualizado com sucesso!')
-    return redirect(url_for('ver_acolhimento', id=ac.id))
+        # 4. Dados do Paciente
+        if ac.paciente:
+            if hasattr(ac.paciente, 'nome_completo'):
+                ac.paciente.nome_completo = request.form.get('paciente_nome', ac.paciente.nome_completo)
+            elif hasattr(ac.paciente, 'nome'):
+                ac.paciente.nome = request.form.get('paciente_nome', ac.paciente.nome)
+
+        # Salva tudo no Neon
+        db.session.commit()
+        flash('Dossiê atualizado com sucesso!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ ERRO AO ATUALIZAR ACOLHIMENTO: {e}")
+        flash('Erro interno ao salvar. Verifique o terminal.', 'error')
+
+    # Retorna para a tela atual (ou use a rota correta se não for 'ver_acolhimento')
+    # request.referrer faz ele recarregar a tela em que o usuário estava
+    return redirect(request.referrer or url_for('dashboard'))
 
 @app.route('/api/acolhimento/<int:id>/tarefa', methods=['POST'])
 @login_required
